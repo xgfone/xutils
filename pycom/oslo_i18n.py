@@ -2,11 +2,12 @@
 import oslo_i18n
 
 
-def reset_i18n(domain="app", localedir=None):
+def reset_i18n(domain="app", localedir=None, lazy=True):
     global _translators, _, _C, _P, _LI, _LW, _LE, _LC
 
     # Enable lazy translation
-    oslo_i18n.enable_lazy()
+    if lazy:
+        oslo_i18n.enable_lazy()
 
     _translators = oslo_i18n.TranslatorFactory(domain=domain, localedir=localedir)
 
@@ -30,5 +31,5 @@ def reset_i18n(domain="app", localedir=None):
     _LC = _translators.log_critical
 
 
-_translators, _, _C, _P, _LI, _LW, _LE, _LC = None
+_translators = _ = _C = _P = _LI = _LW = _LE = _LC = None
 reset_i18n()
