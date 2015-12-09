@@ -18,8 +18,13 @@ _CACHE_BUILTIN = {}
 
 
 def set_builtin(name, value, force=False):
-    if getattr(builtins, name) and not force:
-        raise AttributeError("{0} has already existed".format(name))
+    try:
+        getattr(builtins, name)
+    except AttributeError:
+        pass
+    else:
+        if not force:
+            raise AttributeError("{0} has already existed".format(name))
 
     setattr(builtins, name, value)
     global _CACHE_BUILTIN

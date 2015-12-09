@@ -17,8 +17,13 @@ except ImportError:
         import __builtin__ as builtins
 
     def set_builtin(name, value, force=False):
-        if getattr(builtins, name) and not force:
-            raise AttributeError("{0} has already existed".format(name))
+        try:
+            getattr(builtins, name)
+        except AttributeError:
+            pass
+        else:
+            if not force:
+                raise AttributeError("{0} has already existed".format(name))
         setattr(builtins, name, value)
 finally:
     set_builtin("PY3", PY3)
