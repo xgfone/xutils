@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Add the test of `const`
 * Add the install script to package it
 * Add the tests
 * Rename
