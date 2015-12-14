@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* Remove some dependent packages in requirements.txt
+* Add the module of `daemon`
+* Add the test of `inet_protocol`
 * Add the test of `builtin`
 * Add the test of `const`
 * Add the install script to package it
