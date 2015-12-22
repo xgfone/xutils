@@ -2,7 +2,7 @@
 """Turn the program into a daemon process."""
 
 
-def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False):
+def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False, stdio=False):
     """Turn the program into a daemon process.
 
     Detach this process from the controlling terminal and run it in the
@@ -140,22 +140,28 @@ def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False):
     if keep_fds_open:
         maxfd = 2           # standard error (2)
 
+    if stdio:
+        start = 2
+    else:
+        start = 0
+
     # Iterate through and close all file descriptors.
-    for fd in range(0, maxfd):
+    for fd in range(start, maxfd):
         try:
             os.close(fd)
         except OSError:  # ERROR, fd wasn't open to begin with (ignored)
             pass
 
-    # Redirect the standard I/O file descriptors to the specified file.  Since
-    # the daemon has no controlling terminal, most daemons redirect stdin,
-    # stdout, and stderr to /dev/null.  This is done to prevent side-effects
-    # from reads and writes to the standard I/O file descriptors.
+    if not start:
+        # Redirect the standard I/O file descriptors to the specified file.  Since
+        # the daemon has no controlling terminal, most daemons redirect stdin,
+        # stdout, and stderr to /dev/null.  This is done to prevent side-effects
+        # from reads and writes to the standard I/O file descriptors.
+        #
+        # This call to open is guaranteed to return the lowest file descriptor,
+        # which will be 0 (stdin), since it was closed above.
+        os.open(REDIRECT_TO, os.O_RDWR)  # standard input (0)
 
-    # This call to open is guaranteed to return the lowest file descriptor,
-    # which will be 0 (stdin), since it was closed above.
-    os.open(REDIRECT_TO, os.O_RDWR)  # standard input (0)
-
-    # Duplicate standard input to standard output and standard error.
-    os.dup2(0, 1)           # standard output (1)
-    os.dup2(0, 2)           # standard error (2)
+        # Duplicate standard input to standard output and standard error.
+        os.dup2(0, 1)           # standard output (1)
+        os.dup2(0, 2)           # standard error (2)
