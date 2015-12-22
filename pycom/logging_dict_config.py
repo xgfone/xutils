@@ -19,7 +19,7 @@ DEFAULT_LOGGING = {
     },
     "formatters": {
         "simple": {
-            "format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s",
+            "format": "%(asctime)s - %(name)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
     },
