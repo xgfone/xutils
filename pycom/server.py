@@ -32,6 +32,11 @@ def wrap_exc(f):
     return inner
 
 
+class HandlerBase(object):
+    def __call__(self, client_sock, client_addr):
+        raise NotImplementedError("__call__ MUST be implemented")
+
+
 class ServerBase(service.ServiceBase):
     def __init__(self, pool_size=None):
         self.pool_size = pool_size
