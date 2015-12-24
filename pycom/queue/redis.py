@@ -13,28 +13,34 @@ class FILOQueue(object):
         :param queue: A str representing the queue name.
         """
         self.default_queue = queue
+        self.conn = conn
+        self._connect(self.conn)
+
+    def _connect(self, conn):
         if conn is None:
-            kwargs = {
-                "host": "localhost",
-                "port": 6379,
-                "db": 0,
-            }
-            self.redis = redis.Redis(**kwargs)
+            self.redis = redis.Redis()
         elif isinstance(conn, (redis.Redis, redis.StrictRedis)):
             self.redis = redis
         else:
             self.redis = redis.Redis(**conn)
 
-    def queue(self, queue=None):
+    def close(self):
+        self.redis = None
+
+    def reconnect(self, conn=None):
+        conn = conn if conn else self.conn
+        self._connect(conn)
+
+    def _get_queue(self, queue=None):
         queue = queue if queue else self.default_queue
         if not queue:
             raise ValueError("No assign a queue name")
         return queue
 
-    def push(self, queue=None, *datas):
+    def push(self, datas, queue=None):
         """Push the datas into the FILO queue."""
-        queue = self.queue(queue)
-        return self.redis.lpush(queue, *datas)
+        queue = self._get_queue(queue)
+        return self.redis.lpush(queue, datas)
 
     def pop(self, queue=None, timeout=0):
         """Pop the value from the FILO queue `queue`.
@@ -42,5 +48,5 @@ class FILOQueue(object):
         :param queue(str): the queue name, not a list of str.
         :param timeout(int): the timeout. If 0, block indefinitely.
         """
-        queue = self.queue(queue)
+        queue = self._get_queue(queue)
         return self.redis.brpop(queue, timeout=timeout)[1]
