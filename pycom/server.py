@@ -1,0 +1,133 @@
+# encoding: utf-8
+from __future__ import absolute_import, print_function, unicode_literals
+import os
+import socket
+import logging
+import functools
+
+import greenlet
+import eventlet
+
+from oslo_service import service
+
+LOG = logging.getLogger(__name__)
+
+
+def listen_socket(host, port, backlog=1024, reuse=True):
+    sock = socket.socket()
+    if reuse:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((host, port))
+    sock.listen(backlog)
+    return sock
+
+
+def wrap_exc(f):
+    @functools.wraps(f)
+    def inner(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception:
+            return None
+    return inner
+
+
+class ServerBase(service.ServiceBase):
+    def __init__(self, pool_size=None):
+        self.pool_size = pool_size
+        self._pool = eventlet.GreenPool(self.pool_size)
+        self._server = None
+
+    def serve(self, pool):
+        raise NotImplementedError("The method of serve MUST be implemented")
+
+    def _spawn(self, pool):
+        pid = os.getpid()
+        try:
+            self.serve(pool)
+        finally:
+            pool.waitall()
+            LOG.info("[Process{0}] the server exited".format(pid))
+
+    def start(self):
+        self._server = eventlet.spawn(self.serve, pool=self._pool)
+
+    def stop(self):
+        if self._server is not None:
+            # let eventlet close socket
+            self._pool.resize(0)
+            self._server.kill()
+
+    def wait(self):
+        try:
+            if self._server is not None:
+                num = self._pool.running()
+                LOG.debug("Waiting server to finish %d requests.", num)
+                self._pool.waitall()
+        except greenlet.GreenletExit:
+            LOG.info("Server has stopped.")
+
+    def reset(self):
+        self._pool.resize(self.pool_size)
+
+
+class SocketServer(ServerBase):
+    def __init__(self, handler, host, port, pool_size=None, backlog=1024, timeout=None):
+        self.host = host
+        self.port = port
+        self.sock = listen_socket(self.host, self.port, backlog)
+        LOG.info("Listen %s:%s" % (self.host, self.port))
+        self.handler = handler
+        self.timeout = timeout
+        super(SocketServer, self).__init__(pool_size)
+
+    def handle(self, conn, addr):
+        try:
+            self.handler(conn, addr)
+        except socket.timeout:
+            LOG.info("socket from {0} time out".format(addr))
+        finally:
+            try:
+                conn.close()
+            except socket.error:
+                pass
+
+    def serve(self, pool):
+        pid = os.getpid()
+        try:
+            while True:
+                try:
+                    conn, addr = self.sock.accept()
+                    conn.settimeout(self.timeout)
+                    LOG.debug("[Process{0}] accepted {1}".format(pid, addr))
+                    pool.spawn_n(self.handle, conn, addr)
+                except socket.error as e:
+                    LOG.error("[Process{0}] can not handle the request from {1}: {2}".format(pid, addr, e))
+                except (KeyboardInterrupt, SystemExit):
+                    LOG.info("[Process{0}] the server is exiting".format(pid))
+                    break
+        finally:
+            try:
+                self.sock.close()
+            except socket.error as e:
+                pass
+
+
+class TaskServer(ServerBase):
+    def __init__(self, task_fn, task_num=1, pool_size=None, *args, **kwargs):
+        super(TaskServer, self).__init__(pool_size)
+        self.task_fn = task_fn
+        self.task_num = task_num
+        self.args = args
+        self.kwargs = kwargs
+
+    def _wrap_exc(self):
+        try:
+            self.task_fn(*self.args, **self.kwargs)
+        except Exception:
+            pass
+
+    def server(self, pool):
+        for i in range(self.task_num):
+            pool.spawn_n(self._wrap_exc)
+        pool.waitall()
