@@ -132,7 +132,7 @@ class TaskServer(ServerBase):
         except Exception:
             pass
 
-    def server(self, pool):
+    def serve(self, pool):
         for i in range(self.task_num):
             pool.spawn_n(self._wrap_exc)
         pool.waitall()
