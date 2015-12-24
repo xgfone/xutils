@@ -119,12 +119,14 @@ class SocketServer(ServerBase):
 
 
 class TaskServer(ServerBase):
-    def __init__(self, task_fn, task_num=1, pool_size=None, *args, **kwargs):
-        super(TaskServer, self).__init__(pool_size)
+    EXTRA_TASH_NUM = 3
+
+    def __init__(self, task_fn, task_num=1, *args, **kwargs):
         self.task_fn = task_fn
         self.task_num = task_num
         self.args = args
         self.kwargs = kwargs
+        super(TaskServer, self).__init__(self.task_num + self.EXTRA_TASH_NUM)
 
     def _wrap_exc(self):
         try:
@@ -135,4 +137,3 @@ class TaskServer(ServerBase):
     def serve(self, pool):
         for i in range(self.task_num):
             pool.spawn_n(self._wrap_exc)
-        pool.waitall()
