@@ -32,6 +32,19 @@ def wrap_exc(f):
     return inner
 
 
+def BaseRequestHandlerWrapper(HandlerClass):
+    """A wrapper or adapter of BaseRequestHandler.
+
+    By this, you can use BaseRequestHandler, StreamRequestHandler,
+    DatagramRequestHandler of SocketServer in Python 2, or of socketserver in
+    Python 3.
+    """
+    def wrapper(conn, addr):
+        return HandlerClass(conn, addr, None)
+
+    return wrapper
+
+
 class HandlerBase(object):
     def __call__(self, client_sock, client_addr):
         raise NotImplementedError("__call__ MUST be implemented")
