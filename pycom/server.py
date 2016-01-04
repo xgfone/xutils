@@ -76,7 +76,7 @@ class ServerBase(service.ServiceBase):
         self._pool.resize(self.pool_size)
 
 
-class SocketServer(ServerBase):
+class TCPServer(ServerBase):
     def __init__(self, handler, host, port, pool_size=None, backlog=1024, timeout=None):
         self.host = host
         self.port = port
@@ -84,7 +84,7 @@ class SocketServer(ServerBase):
         LOG.info("Listen %s:%s" % (self.host, self.port))
         self.handler = handler
         self.timeout = timeout
-        super(SocketServer, self).__init__(pool_size)
+        super(TCPServer, self).__init__(pool_size)
 
     def handle(self, conn, addr):
         try:
