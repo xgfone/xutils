@@ -8,7 +8,7 @@ import functools
 import greenlet
 import eventlet
 
-from oslo_service import service
+from oslo_service import service, wsgi
 
 LOG = logging.getLogger(__name__)
 
@@ -137,3 +137,7 @@ class TaskServer(ServerBase):
     def serve(self, pool):
         for i in range(self.task_num):
             pool.spawn_n(self._wrap_exc)
+
+
+class WSGIServer(wsgi.Server, service.ServiceBase):
+    pass
