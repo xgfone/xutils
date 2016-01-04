@@ -129,6 +129,7 @@ class TCPServer(ServerBase):
                 self.sock.close()
             except socket.error as e:
                 pass
+SocketServer = TCPServer
 
 
 class TaskServer(ServerBase):
