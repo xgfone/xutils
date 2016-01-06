@@ -153,5 +153,8 @@ class TaskServer(ServerBase):
             pool.spawn_n(self._wrap_exc)
 
 
-class WSGIServer(wsgi.Server, service.ServiceBase):
+# Below the version of 0.10.0, oslo_service.wsgi.Server doesn't inherit
+# oslo_service.wsgi.ServiceBase. So, if using the version below 0.10.0,
+# you SHOULD inherit oslo_service.wsgi.ServiceBase.
+class WSGIServer(wsgi.Server):
     pass
