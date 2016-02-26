@@ -34,3 +34,4 @@ def val(obj, name, default=None):
             return default
     else:
         return default
+v = val
