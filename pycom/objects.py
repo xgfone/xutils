@@ -20,3 +20,17 @@ class AttrWrapper(object):
                 pass
 
         return "%s(%s)" % (self.__class__.__name__, ", ".join(attrs))
+
+
+def val(obj, name, default=None):
+    if hasattr(obj, name):
+        return obj.name
+    elif name in obj:
+        return obj[name]
+    elif isinstance(obj, (list, tuple)) and isinstance(name, int):
+        try:
+            return obj[name]
+        except Exception:
+            return default
+    else:
+        return default
