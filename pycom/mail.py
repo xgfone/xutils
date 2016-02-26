@@ -71,6 +71,9 @@ class EMail(object):
         password = password if password else self.password
         _from = _from if _from else self._from
 
+        if not host or not port or not _from or not tos or not msg:
+            raise ValueError("invalid arguments")
+
         server = smtplib.SMTP()
         server.connect(host, port)
         server.login(username, password)
