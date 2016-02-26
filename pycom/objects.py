@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+import six
 
 ### Attribute Wrapper
 class AttrWrapper(object):
@@ -23,15 +23,11 @@ class AttrWrapper(object):
 
 
 def val(obj, name, default=None):
-    if hasattr(obj, name):
-        return obj.name
-    elif name in obj:
+    if isinstance(name, six.string_types) and hasattr(obj, name):
+        return getattr(obj, name)
+
+    try:
         return obj[name]
-    elif isinstance(obj, (list, tuple)) and isinstance(name, int):
-        try:
-            return obj[name]
-        except Exception:
-            return default
-    else:
+    except Exception:
         return default
 v = val
