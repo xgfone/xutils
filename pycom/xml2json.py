@@ -190,6 +190,18 @@ def json2xml(json_data, factory=ET.Element):
     return ET.tostring(elem)
 
 
+def xml2dict(xmlstring, strip_ns=1, strip=1):
+    elem = ET.fromstring(xmlstring)
+    if hasattr(elem, 'getroot'):
+        elem = elem.getroot()
+    return elem_to_internal(elem, strip_ns=strip_ns, strip=strip)
+
+
+def dict2xml(dict_data, factory=ET.Element):
+    elem = internal_to_elem(dict_data, factory)
+    return ET.tostring(elem)
+
+
 def main():
     p = argparse.ArgumentParser(
         description='Converts XML to JSON or the other way around.  Reads from standard input by default, or from file if given.',
