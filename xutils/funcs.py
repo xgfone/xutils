@@ -97,13 +97,3 @@ else:
         return output
 
     subprocess.check_output = check_output
-
-
-try:
-    from pycom.builtin import set_builtin
-except ImportError:
-    pass
-else:
-    set_builtin("map2", map2)
-    set_builtin("map3", map3)
-    set_builtin("check_output", check_output)

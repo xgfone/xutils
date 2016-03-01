@@ -1,7 +1,8 @@
 # encoding: utf-8
 import six
 
-### Attribute Wrapper
+
+# Attribute Wrapper
 class AttrWrapper(object):
     attrs = []
 
@@ -30,4 +31,4 @@ def val(obj, name, default=None):
         return obj[name]
     except Exception:
         return default
-v = val
+v = get = attr = val
