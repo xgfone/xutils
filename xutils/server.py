@@ -51,7 +51,7 @@ class HandlerBase(object):
 
 
 class ServerBase(service.ServiceBase):
-    def __init__(self, pool_size=None):
+    def __init__(self, pool_size=1024):
         self.pool_size = pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
         self._server = None
@@ -90,7 +90,7 @@ class ServerBase(service.ServiceBase):
 
 
 class TCPServer(ServerBase):
-    def __init__(self, handler, host, port, pool_size=None, backlog=1024, timeout=None):
+    def __init__(self, handler, host, port, pool_size=1024, backlog=1024, timeout=None):
         self.host = host
         self.port = port
         self.sock = listen_socket(self.host, self.port, backlog)
@@ -154,7 +154,7 @@ class TaskServer(ServerBase):
 
 
 class PoolServer(ServerBase):
-    def __init__(self, handler, pool_size=None, *args, **kwargs):
+    def __init__(self, handler, pool_size=1024, *args, **kwargs):
         self.handler = handler
         self.args = args
         self.kwargs = kwargs
