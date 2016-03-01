@@ -1,7 +1,7 @@
 # encoding: utf-8
 import unittest
 
-from pycom import const
+from xutils import const
 
 
 class ConstTests(unittest.TestCase):

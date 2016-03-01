@@ -1,6 +1,6 @@
 # encoding: utf-8
 import unittest
-from pycom.url import URL
+from xutils.url import URL
 
 
 class BuiltinTests(unittest.TestCase):

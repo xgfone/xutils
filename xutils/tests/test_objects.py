@@ -1,6 +1,6 @@
 # encoding: utf-8
 import unittest
-from pycom.objects import AttrWrapper
+from xutils.objects import AttrWrapper
 
 
 class ObjectsTests(unittest.TestCase):

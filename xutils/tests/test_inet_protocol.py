@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import unittest
-from pycom import inet_protocol as inet
+from xutils import inet_protocol as inet
 
 
 class InetTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 # encoding: utf-8
 import unittest
-from pycom import osloi18n as i18n
+from xutils import osloi18n as i18n
 
 
 class OsloI18nTests(unittest.TestCase):

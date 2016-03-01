@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import unittest
-from pycom.logging_dict_config import get_config
+from xutils.logging_dict_config import get_config
 
 
 class LoggingTests(unittest.TestCase):

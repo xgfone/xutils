@@ -1,2 +1,2 @@
-# pycom
+# xutils
 A fragmentary Python library.

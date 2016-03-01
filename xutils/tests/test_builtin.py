@@ -1,6 +1,6 @@
 # encoding: utf-8
 import unittest
-from pycom import builtin
+from xutils import builtin
 
 
 class BuiltinTests(unittest.TestCase):
