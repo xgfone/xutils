@@ -135,9 +135,9 @@ SocketServer = TCPServer
 class TaskServer(ServerBase):
     EXTRA_TASH_NUM = 3
 
-    def __init__(self, task_fn, task_num=1, *args, **kwargs):
+    def __init__(self, task_fn, *args, **kwargs):
         self.task_fn = task_fn
-        self.task_num = task_num
+        self.task_num = kwargs.pop("task_num", 1)
         self.args = args
         self.kwargs = kwargs
         super(TaskServer, self).__init__(self.task_num + self.EXTRA_TASH_NUM)
@@ -154,7 +154,8 @@ class TaskServer(ServerBase):
 
 
 class PoolServer(ServerBase):
-    def __init__(self, handler, pool_size=1024, *args, **kwargs):
+    def __init__(self, handler, *args, **kwargs):
+        pool_size = kwargs.pop("pool_size", 10240)
         self.handler = handler
         self.args = args
         self.kwargs = kwargs
