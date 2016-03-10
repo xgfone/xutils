@@ -155,6 +155,7 @@ class TaskServer(ServerBase):
     def serve(self, pool):
         for i in range(self.task_num):
             pool.spawn_n(self._wrap_exc)
+        LOG.info("Process{0} start {1} tasks".format(os.getpid(), self.task_num))
 
 
 class PoolServer(ServerBase):
