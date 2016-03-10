@@ -4,6 +4,7 @@ import os
 import socket
 import logging
 import functools
+import traceback
 
 import greenlet
 import eventlet
@@ -120,6 +121,9 @@ class TCPServer(ServerBase):
                     LOG.debug("[Process{0}] accepted {1}".format(pid, addr))
                     pool.spawn_n(self.handle, conn, addr)
                 except socket.error as e:
+                    LOG.error("[Process{0}] Socket has a error {1}: {2}".format(pid, addr, e))
+                except Exception as e:
+                    LOG.error(traceback.format_exc())
                     LOG.error("[Process{0}] can not handle the request from {1}: {2}".format(pid, addr, e))
                 except (KeyboardInterrupt, SystemExit):
                     LOG.info("[Process{0}] the server is exiting".format(pid))
@@ -146,7 +150,7 @@ class TaskServer(ServerBase):
         try:
             self.task_fn(*self.args, **self.kwargs)
         except Exception:
-            pass
+            LOG.error(traceback.format_exc())
 
     def serve(self, pool):
         for i in range(self.task_num):
@@ -165,7 +169,7 @@ class PoolServer(ServerBase):
         try:
             self.handler(pool, *self.args, **self.kwargs)
         except Exception:
-            pass
+            LOG.error(traceback.format_exc())
 
 
 # Below the version of 0.10.0, oslo_service.wsgi.Server doesn't inherit
