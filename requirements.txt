@@ -5,3 +5,12 @@
 pbr<2.0,>=1.4
 setuptools>=16.0
 six
+netaddr
+
+# These packages below are not installed automatically, and you need to add
+# them into requirements.txt in you application, if you want to use some
+# functions in this package.
+#oslo.i18n
+#oslo.utils
+#oslo_service
+#oslo.db

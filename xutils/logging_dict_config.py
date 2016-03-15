@@ -11,7 +11,7 @@ DEFAULT_LOGGING = {
     },
     "loggers": {
         "default": {
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": 0,
             "handlers": ["file"],
             "filters": [],
@@ -19,7 +19,7 @@ DEFAULT_LOGGING = {
     },
     "formatters": {
         "simple": {
-            "format": "%(asctime)s - %(name)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s",
+            "format": "%(asctime)s - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         }
     },
@@ -34,7 +34,7 @@ DEFAULT_LOGGING = {
             "class": "logging.NullHandler",
         },
         "console": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "simple",
             "filters": [],

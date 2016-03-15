@@ -1,15 +1,21 @@
 # coding: utf-8
 import oslo_i18n
 
+_translators = _ = _C = _P = _LI = _LW = _LE = _LC = None
 
-def reset_i18n(domain="app", localedir=None, lazy=True):
-    global _translators, _, _C, _P, _LI, _LW, _LE, _LC
 
+def get_translator(domain="app", localedir=None, lazy=True):
     # Enable lazy translation
     if lazy:
         oslo_i18n.enable_lazy()
 
-    _translators = oslo_i18n.TranslatorFactory(domain=domain, localedir=localedir)
+    return oslo_i18n.TranslatorFactory(domain=domain, localedir=localedir)
+
+
+def reset_i18n(domain="app", localedir=None, lazy=True):
+    global _translators, _, _C, _P, _LI, _LW, _LE, _LC
+
+    _translators = get_translator(domain=domain, localedir=localedir, lazy=lazy)
 
     # The primary translation function using the well-known name "_"
     _ = _translators.primary
@@ -31,5 +37,4 @@ def reset_i18n(domain="app", localedir=None, lazy=True):
     _LC = _translators.log_critical
 
 
-_translators = _ = _C = _P = _LI = _LW = _LE = _LC = None
 reset_i18n()

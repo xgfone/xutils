@@ -52,7 +52,7 @@ class HandlerBase(object):
 
 
 class ServerBase(service.ServiceBase):
-    def __init__(self, pool_size=1024):
+    def __init__(self, pool_size=10240):
         self.pool_size = pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
         self._server = None
@@ -91,7 +91,7 @@ class ServerBase(service.ServiceBase):
 
 
 class TCPServer(ServerBase):
-    def __init__(self, handler, host, port, pool_size=1024, backlog=1024, timeout=None):
+    def __init__(self, handler, host, port, pool_size=10240, backlog=1024, timeout=None):
         self.host = host
         self.port = port
         self.sock = listen_socket(self.host, self.port, backlog)
@@ -177,4 +177,6 @@ class PoolServer(ServerBase):
 # oslo_service.wsgi.ServiceBase. So, if using the version below 0.10.0,
 # you SHOULD inherit oslo_service.wsgi.ServiceBase.
 class WSGIServer(wsgi.Server):
-    pass
+    def __init__(self, *args, **kwargs):
+        kwargs["pool_size"] = kwargs.get("pool_size", 10240)
+        super(WSGIServer, self).__init__(*args, **kwargs)
