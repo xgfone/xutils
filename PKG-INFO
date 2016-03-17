@@ -1,0 +1,20 @@
+Metadata-Version: 1.1
+Name: xuitls
+Version: 0.5
+Summary: A Fragmentary Python Library
+Home-page: https://github.com/xgfone/xuitls
+Author: xgfone
+Author-email: xgfone@126.com
+License: UNKNOWN
+Description: README.rst
+Platform: UNKNOWN
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
