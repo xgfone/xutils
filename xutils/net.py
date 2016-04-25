@@ -5,7 +5,7 @@ import netaddr
 import logging
 import six
 
-LOG = logging.getLogger()
+LOG = logging.getLogger(__name__)
 _ = (lambda v: v)
 
 
