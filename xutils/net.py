@@ -4,9 +4,51 @@ import random
 import netaddr
 import logging
 import six
+import netifaces
 
 LOG = logging.getLogger(__name__)
 _ = (lambda v: v)
+
+LOCALHOST4 = "127.0.0.1"
+LOCALHOST6 = "[::1]"
+
+
+def get_ip(if_or_ip=None, default=None, ipv6=False):
+    """Get the IP information.
+
+    If the argument is the valid IPv4 or IPv6, return it directly. Or, it is
+    considered as the interface's name, then return its IP. If fails, return
+    the local ip that is in the same network as the gateway, or "127.0.0.1"
+    or "[:]".
+
+    When the argument is the interface's name, if `ipv6` is True, return IPv6,
+    or return IPv4.
+    """
+    try:
+        ok = netaddr.valid_ipv4(if_or_ip) or netaddr.valid_ipv6(if_or_ip)
+        if ok:
+            return if_or_ip
+    except Exception:
+        pass
+
+    if ipv6:
+        af_inet = netifaces.AF_INET6
+        default = default or LOCALHOST6
+    else:
+        af_inet = netifaces.AF_INET
+        default = default or LOCALHOST4
+
+    if not if_or_ip:
+        gtw = netifaces.gateways()
+        try:
+            if_or_ip = gtw['default'][af_inet][1]
+        except Exception:
+            return default
+
+    try:
+        return netifaces.ifaddresses(if_or_ip)[af_inet][0]['addr']
+    except Exception:
+        return default
 
 
 def parse_server_string(server_str):

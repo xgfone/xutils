@@ -6,6 +6,7 @@ pbr<2.0,>=1.4
 setuptools>=16.0
 six
 netaddr
+netifaces
 
 # These packages below are not installed automatically, and you need to add
 # them into requirements.txt in you application, if you want to use some
