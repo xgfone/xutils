@@ -175,3 +175,36 @@ def generate_mac_address():
            random.randint(0x00, 0xff),
            random.randint(0x00, 0xff)]
     return ':'.join(map(lambda x: "%02x" % x, mac))
+
+
+class Mac(object):
+    def __init__(self, mac, upper=False, unified=False):
+        flag = "X" if upper else "x"
+        width = "2" if unified else "1"
+        formatter = "".join(("{0:0", width, flag, "}"))
+
+        ms = []
+        try:
+            for i in mac.strip().lower().split(":"):
+                ms.append(formatter.format(int(i, 16)))
+        except ValueError:
+            raise ValueError("The mac is invalid: {0}".format(mac))
+
+        if len(ms) != 6:
+            raise ValueError("The mac is invalid: {0}".format(mac))
+
+        self.mac = ":".join(ms)
+
+    def __eq__(self, other):
+        if isinstance(other, Mac):
+            return self.mac == other.mac
+        elif isinstance(other, str):
+            return self.mac == other
+        else:
+            return self.mac == str(other)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return self.mac
