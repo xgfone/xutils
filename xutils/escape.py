@@ -28,6 +28,7 @@ import sys
 #from tornado.util import unicode_type, basestring_type
 from six import text_type as unicode_type
 from six import string_types as basestring_type
+from six import binary_type as bytes_type
 
 try:
     from urllib.parse import parse_qs as _parse_qs  # py3
@@ -187,6 +188,26 @@ else:
         for k, v in result.items():
             encoded[k] = [i.encode('latin1') for i in v]
         return encoded
+
+
+def to_bytes(obj, encoding="utf-8"):
+    """Convert obj to str in Python 2, or bytes in Python 3."""
+    if isinstance(obj, (bytes_type, type(None))):
+        return obj
+    elif isinstance(obj, unicode_type):
+        return obj.encode(encoding)
+    else:
+        raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
+
+
+def to_text(obj, decoding="utf-8"):
+    """Convert obj to unicode in Python 2, or str in Python 3."""
+    if isinstance(obj, (unicode_type, type(None))):
+        return obj
+    elif isinstance(obj, bytes_type):
+        return obj.decode(decoding)
+    else:
+        raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
 
 
 _UTF8_TYPES = (bytes, type(None))
