@@ -24,6 +24,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import re
 import sys
+import six
 
 #from tornado.util import unicode_type, basestring_type
 from six import text_type as unicode_type
@@ -191,74 +192,33 @@ else:
 
 
 def to_bytes(obj, encoding="utf-8"):
-    """Convert obj to str in Python 2, or bytes in Python 3."""
-    if isinstance(obj, (bytes_type, type(None))):
+    """Converts a string argument to a bytes string.
+
+    If the argument is already a bytes string or None, it is returned
+    unchanged.  Otherwise it must be a unicode string and is decoded as
+    the argument of encoding."""
+    if isinstance(obj, _BYTES_TYPES):
         return obj
     elif isinstance(obj, unicode_type):
         return obj.encode(encoding)
-    else:
-        raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
+    raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
 
 
-def to_text(obj, decoding="utf-8"):
-    """Convert obj to unicode in Python 2, or str in Python 3."""
-    if isinstance(obj, (unicode_type, type(None))):
-        return obj
-    elif isinstance(obj, bytes_type):
-        return obj.decode(decoding)
-    else:
-        raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
-
-
-_UTF8_TYPES = (bytes, type(None))
-
-
-def utf8(value):
-    """Converts a string argument to a byte string.
-
-    If the argument is already a byte string or None, it is returned unchanged.
-    Otherwise it must be a unicode string and is encoded as utf8.
-    """
-    if isinstance(value, _UTF8_TYPES):
-        return value
-    if not isinstance(value, unicode_type):
-        raise TypeError(
-            "Expected bytes, unicode, or None; got %r" % type(value)
-        )
-    return value.encode("utf-8")
-
-_TO_UNICODE_TYPES = (unicode_type, type(None))
-
-
-def to_unicode(value):
+def to_unicode(obj, decoding="utf-8"):
     """Converts a string argument to a unicode string.
 
     If the argument is already a unicode string or None, it is returned
-    unchanged.  Otherwise it must be a byte string and is decoded as utf8.
+    unchanged.  Otherwise it must be a byte string and is decoded as
+    the argument of encoding.
     """
-    if isinstance(value, _TO_UNICODE_TYPES):
-        return value
-    if not isinstance(value, bytes):
-        raise TypeError(
-            "Expected bytes, unicode, or None; got %r" % type(value)
-        )
-    return value.decode("utf-8")
-
-# to_unicode was previously named _unicode not because it was private,
-# but to avoid conflicts with the built-in unicode() function/type
-_unicode = to_unicode
-
-# When dealing with the standard library across python 2 and 3 it is
-# sometimes useful to have a direct conversion to the native string type
-if str is unicode_type:
-    native_str = to_unicode
-else:
-    native_str = utf8
-
-_BASESTRING_TYPES = (basestring_type, type(None))
+    if isinstance(obj, _UNICODE_TYPES):
+        return obj
+    elif isinstance(obj, bytes_type):
+        return obj.decode(decoding)
+    raise TypeError("Expected bytes, unicode, or None; got %r" % type(obj))
 
 
-def to_basestring(value):
+def to_basestring(value, encoding="utf-8"):
     """Converts a string argument to a subclass of basestring.
 
     In python2, byte and unicode strings are mostly interchangeable,
@@ -270,10 +230,20 @@ def to_basestring(value):
     if isinstance(value, _BASESTRING_TYPES):
         return value
     if not isinstance(value, bytes):
-        raise TypeError(
-            "Expected bytes, unicode, or None; got %r" % type(value)
-        )
-    return value.decode("utf-8")
+        return value.decode(encoding)
+    raise TypeError("Expected bytes, unicode, or None; got %r" % type(value))
+
+
+_BYTES_TYPES = (bytes_type, type(None))
+_UNICODE_TYPES = (unicode_type, type(None))
+_BASESTRING_TYPES = (basestring_type, type(None))
+
+# When dealing with the standard library across python 2 and 3 it is
+# sometimes useful to have a direct conversion to the native string type
+if str is unicode_type:
+    to_str = native_str = to_unicode
+else:
+    to_str = native_str = utf8
 
 
 def recursive_unicode(obj):
