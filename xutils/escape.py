@@ -243,7 +243,7 @@ _BASESTRING_TYPES = (basestring_type, type(None))
 if str is unicode_type:
     to_str = native_str = to_unicode
 else:
-    to_str = native_str = utf8
+    to_str = native_str = to_bytes
 
 
 def recursive_unicode(obj):
