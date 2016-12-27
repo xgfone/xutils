@@ -20,8 +20,13 @@
 from __future__ import absolute_import, print_function
 
 import re
+import pbr
 
 _ = (lambda v: v)
+
+
+def get_program_version(program_name):
+    return pbr.version.VersionInfo(program_name).version_string()
 
 
 class Version(object):
