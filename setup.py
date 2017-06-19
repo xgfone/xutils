@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name="xutils",
-    version="0.8",
+    version="0.8.1",
     description="A Fragmentary Python Library.",
     author="xgfone",
     author_email="xgfone@126.com",
