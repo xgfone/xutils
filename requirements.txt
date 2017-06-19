@@ -2,15 +2,13 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-pbr<2.0,>=1.4
-setuptools>=16.0
-six
-netaddr
-netifaces
-
 # These packages below are not installed automatically, and you need to add
 # them into requirements.txt in you application, if you want to use some
 # functions in this package.
+#pbr>=2.0
+#setuptools>=16.0
+#netaddr
+#netifaces
 #oslo.i18n
 #oslo.utils
 #oslo_service

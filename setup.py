@@ -1,15 +1,29 @@
-
-# THIS FILE IS MANAGED BY THE GLOBAL REQUIREMENTS REPO - DO NOT EDIT
-import setuptools
-
-# In python < 2.7.4, a lazy loading of package `pbr` will break
-# setuptools if some other modules registered functions in `atexit`.
-# solution from: http://bugs.python.org/issue15881#msg170215
 try:
-    import multiprocessing  # noqa
+    from setuptools import setup
 except ImportError:
-    pass
+    from distutils.core import setup
 
-setuptools.setup(
-    setup_requires=['pbr>=1.3'],
-    pbr=True)
+setup(
+    name="xutils",
+    version="0.8",
+    description="A Fragmentary Python Library.",
+    author="xgfone",
+    author_email="xgfone@126.com",
+    maintainer="xgfone",
+    maintainer_email="xgfone@126.com",
+    url="https://github.com/xgfone/xutils",
+    packages=["xutils"],
+
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+    ],
+)
