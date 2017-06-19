@@ -153,9 +153,9 @@ def elem2json(elem, pretty=False, strip_ns=1, strip=1):
         elem = elem.getroot()
 
     if pretty:
-        return json.dumps(elem_to_internal(elem, strip_ns=strip_ns, strip=strip), sort_keys=True, indent=4, separators=(',', ': '))
-    else:
-        return json.dumps(elem_to_internal(elem, strip_ns=strip_ns, strip=strip))
+        return json.dumps(elem_to_internal(elem, strip_ns=strip_ns, strip=strip),
+                          sort_keys=True, indent=4, separators=(',', ': '))
+    return json.dumps(elem_to_internal(elem, strip_ns=strip_ns, strip=strip))
 
 
 def json2elem(json_data, factory=ET.Element):
@@ -204,7 +204,8 @@ def dict2xml(dict_data, factory=ET.Element):
 
 def main():
     p = argparse.ArgumentParser(
-        description='Converts XML to JSON or the other way around.  Reads from standard input by default, or from file if given.',
+        description=('Converts XML to JSON or the other way around. Reads from'
+                     ' standard input by default, or from file if given.'),
         prog='xml2json',
         usage='%(prog)s -t xml2json -o file.json [file]'
     )
@@ -240,12 +241,12 @@ def main():
         strip_ns = 1
     if args.strip_nl:
         data = data.replace('\n', '').replace('\r', '')
-    if (args.type == "xml2json"):
+    if args.type == "xml2json":
         out = xml2json(data, args.pretty, strip_ns, strip)
     else:
         out = json2xml(data)
 
-    if (args.out):
+    if args.out:
         file = open(args.out, 'w')
         file.write(out)
         file.close()

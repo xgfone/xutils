@@ -12,8 +12,7 @@ def format_interval(t):
     h, m = divmod(mins, 60)
     if h:
         return '%d:%02d:%02d' % (h, m, s)
-    else:
-        return '%02d:%02d' % (m, s)
+    return '%02d:%02d' % (m, s)
 
 
 def format_meter(n, total, elapsed):
@@ -40,8 +39,7 @@ def format_meter(n, total, elapsed):
         return '|%s| %d/%d %s [elapsed: %s left: %s, %s iters/sec]' % (
             bar, n, total, percentage, elapsed_str, left_str, rate)
 
-    else:
-        return '%d [elapsed: %s, %s iters/sec]' % (n, elapsed_str, rate)
+    return '%d [elapsed: %s, %s iters/sec]' % (n, elapsed_str, rate)
 
 
 class StatusPrinter(object):

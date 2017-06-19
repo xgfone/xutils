@@ -20,7 +20,7 @@ def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False, stdio=Fals
 
     # The standard I/O file descriptors are redirected to /dev/null by default.
     import os
-    if (hasattr(os, "devnull")):
+    if hasattr(os, "devnull"):
         REDIRECT_TO = os.devnull
     else:
         REDIRECT_TO = "/dev/null"
@@ -35,7 +35,7 @@ def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False, stdio=Fals
     except OSError as e:
         raise Exception("%s [%d]" % (e.strerror, e.errno))
 
-    if (pid == 0):  # The first child.
+    if pid == 0:  # The first child.
         # To become the session leader of this new session and the process group
         # leader of the new process group, we call os.setsid().  The process is
         # also guaranteed not to have a controlling terminal.
@@ -83,7 +83,7 @@ def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False, stdio=Fals
         except OSError as e:
             raise Exception("%s [%d]" % (e.strerror, e.errno))
 
-        if (pid == 0):  # The second child.
+        if pid == 0:  # The second child.
             # Since the current working directory may be a mounted filesystem, we
             # avoid the issue of not being able to unmount the filesystem at
             # shutdown time by changing it to the root directory.
@@ -132,7 +132,7 @@ def daemon(umask=None, workdir=None, maxfd=None, keep_fds_open=False, stdio=Fals
     #
     import resource  # Resource usage information.
     maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
-    if (maxfd == resource.RLIM_INFINITY):
+    if maxfd == resource.RLIM_INFINITY:
         maxfd = MAXFD
 
     # Close only the standard file descriptors. This was added in order to
