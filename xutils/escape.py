@@ -24,12 +24,11 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import re
 import sys
-import six
 
 #from tornado.util import unicode_type, basestring_type
-from six import text_type as unicode_type
-from six import string_types as basestring_type
-from six import binary_type as bytes_type
+from xutils import text_type as unicode_type
+from xutils import string_type as basestring_type
+from xutils import byte_type as bytes_type
 
 try:
     from urllib.parse import parse_qs as _parse_qs  # py3
@@ -75,7 +74,7 @@ def xhtml_escape(value):
 
 def xhtml_unescape(value):
     """Un-escapes an XML-escaped string."""
-    return re.sub(r"&(#?)(\w+?);", _convert_entity, _unicode(value))
+    return re.sub(r"&(#?)(\w+?);", _convert_entity, to_unicode(value))
 
 
 # The fact that json_encode wraps json.dumps is an implementation detail.
@@ -114,7 +113,7 @@ def url_escape(value, plus=True):
         The ``plus`` argument
     """
     quote = urllib_parse.quote_plus if plus else urllib_parse.quote
-    return quote(utf8(value))
+    return quote(to_bytes(value))
 
 
 # python 3 changed things around enough that we need two separate
@@ -140,9 +139,8 @@ if sys.version_info[0] < 3:
         """
         unquote = (urllib_parse.unquote_plus if plus else urllib_parse.unquote)
         if encoding is None:
-            return unquote(utf8(value))
-        else:
-            return unicode_type(unquote(utf8(value)), encoding)
+            return unquote(to_bytes(value))
+        return unicode_type(unquote(to_bytes(value)), encoding)
 
     parse_qs_bytes = _parse_qs
 else:
@@ -269,11 +267,14 @@ def recursive_unicode(obj):
 # This regex should avoid those problems.
 # Use to_unicode instead of tornado.util.u - we don't want backslashes getting
 # processed as escapes.
-_URL_RE = re.compile(to_unicode(r"""\b((?:([\w-]+):(/{1,3})|www[.])(?:(?:(?:[^\s&()]|&amp;|&quot;)*(?:[^!"#$%&'()*+,.:;<=>?@\[\]^`{|}~\s]))|(?:\((?:[^\s&()]|&amp;|&quot;)*\)))+)"""))
+_URL_RE = re.compile(to_unicode(r"""\b((?:([\w-]+):(/{1,3})|www[.])(?:(?:(?:"""
+                                r"""[^\s&()]|&amp;|&quot;)*(?:[^!"#$%&'()*+,"""
+                                r""".:;<=>?@\[\]^`{|}~\s]))|(?:\((?:[^\s&()]"""
+                                r"""|&amp;|&quot;)*\)))+)"""))
 
 
-def linkify(text, shorten=False, extra_params="",
-            require_protocol=False, permitted_protocols=["http", "https"]):
+def linkify(text, shorten=False, extra_params="", require_protocol=False,
+            permitted_protocols=["http", "https"]):
     """Converts plain text into HTML with links.
 
     For example: ``linkify("Hello http://tornadoweb.org!")`` would return
@@ -364,7 +365,7 @@ def linkify(text, shorten=False, extra_params="",
     # First HTML-escape so that our strings are all safe.
     # The regex is modified to avoid character entites other than &amp; so
     # that we won't pick up &quot;, etc.
-    text = _unicode(xhtml_escape(text))
+    text = to_unicode(xhtml_escape(text))
     return _URL_RE.sub(make_link, text)
 
 
@@ -373,8 +374,7 @@ def _convert_entity(m):
         try:
             if m.group(2)[:1].lower() == 'x':
                 return unichr(int(m.group(2)[1:], 16))
-            else:
-                return unichr(int(m.group(2)))
+            return unichr(int(m.group(2)))
         except ValueError:
             return "&#%s;" % m.group(2)
     try:

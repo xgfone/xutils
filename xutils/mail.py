@@ -63,8 +63,8 @@ class EMail(object):
         self.postfix = postfix
         self._from = _from
 
-    def send(self, tos, msg, host=None, port=None, username=None,
-              password=None, _from=None):
+    def send(self, tos, msg, host=None, port=None, username=None, password=None,
+             _from=None):
         host = host if host else self.host
         port = port if port else self.port
         username = username if username else self.username
@@ -84,14 +84,14 @@ class EMail(object):
     def get_simple_msg(self, to_list, subject, content='', subtype="html", charset="utf8"):
         msg = MIMEText(content, subtype, charset)
         msg["Subject"] = subject
-        msg["From"] = self.from_addr
+        msg["From"] = self._from
         msg["To"] = ";".join(to_list)
         return msg
 
     def get_message(self, to_list, subject, content='', subtype="html", charset="utf8",
                     attachmets=None, content_type="application/octet-stream"):
         msg = MIMEMultipart()
-        msg["From"] = self.from_addr
+        msg["From"] = self._from
         msg["To"] = ';'.join((to_list))
         msg["Subject"] = subject
 

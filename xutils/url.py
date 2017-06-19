@@ -1,5 +1,9 @@
 # encoding: utf-8
-import urlparse
+
+try:
+    from urlparse import urlparse, urlunsplit
+except ImportError:
+    from urllib.parse import urlparse, urlunsplit
 
 
 class URL(object):
@@ -7,7 +11,7 @@ class URL(object):
 
     def __init__(self, url, allowed_scheme=None):
         self._url = url
-        self.url = urlparse.urlparse(self._url)
+        self.url = urlparse(self._url)
         self._scheme = allowed_scheme if allowed_scheme else self.DEFAULT_SCHEME
 
     def geturl(self):
@@ -20,7 +24,7 @@ class URL(object):
 
         if params:
             url = "%s;%s" % (url, params)
-        return urlparse.urlunsplit((scheme, netloc, url, query, fragment))
+        return urlunsplit((scheme, netloc, url, query, fragment))
 
     def get_full_url(self, base=None):
         return self.s_get_full_url(self, base)
