@@ -41,14 +41,14 @@ These packages below are not installed automatically, and you need to add them i
 Dependency Relationship
 -----------------------
 
-================  ============
-    Dependent       Depended
-================  ============
-xutils.net         netaddr, netifaces
- xutils.oslodb     oslo.db
- xutils.server     oslo.service
- xutils.osloi18n   oslo.i18n
- xutils.version.get_program_version     pbr
-================  ============
+====================================  ===================
+           Dependent                       Depended
+====================================  ===================
+ xutils.net                            netaddr, netifaces
+ xutils.oslodb                         oslo.db
+ xutils.server                         oslo.service
+ xutils.osloi18n                       oslo.i18n
+ xutils.version.get_program_version    pbr
+====================================  ===================
 
 These packages are independent of one another. If you do not use one of them, it is needless to install the package that it depends on.
