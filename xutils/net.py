@@ -1,10 +1,17 @@
 # encoding: utf8
 import re
+import sys
 import random
 import netaddr
 import logging
-import six
 import netifaces
+
+if sys.version_info[0] == 2:
+    PY3 = False
+    text_type = unicode
+else:
+    PY3 = True
+    text_type = str
 
 LOG = logging.getLogger(__name__)
 _ = (lambda v: v)
@@ -148,10 +155,10 @@ def safe_ip_format(ip):
 
 def sanitize_hostname(hostname):
     """Return a hostname which conforms to RFC-952 and RFC-1123 specs."""
-    if isinstance(hostname, six.text_type):
+    if isinstance(hostname, text_type):
         # Remove characters outside the Unicode range U+0000-U+00FF
         hostname = hostname.encode('latin-1', 'ignore')
-        if six.PY3:
+        if PY3:
             hostname = hostname.decode('latin-1')
 
     hostname = re.sub('[ _]', '-', hostname)
