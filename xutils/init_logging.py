@@ -6,22 +6,24 @@ import logging
 def init_logging(logger=None, level="DEBUG", log_file="", file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
-        fmt = "%(asctime)s - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
-        datefmt = "%Y-%m-%d %H:%M:%S"
-        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+        loggers = logger if isinstance(logger, (list, tuple)) else [logger]
+        for logger in loggers:
+            fmt = "%(asctime)s - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
+            datefmt = "%Y-%m-%d %H:%M:%S"
+            formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
 
-        level = getattr(logging, level.upper())
-        logger.setLevel(level)
+            level = getattr(logging, level.upper())
+            logger.setLevel(level)
 
-        if log_file:
-            from logging.handlers import TimedRotatingFileHandler
-            handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=30)
-        else:
-            handler = logging.StreamHandler()
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
+            if log_file:
+                from logging.handlers import TimedRotatingFileHandler
+                handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=30)
+            else:
+                handler = logging.StreamHandler()
+            handler.setLevel(level)
+            handler.setFormatter(formatter)
 
-        logger.addHandler(handler)
+            logger.addHandler(handler)
 
     # Initialize logging by the configuration file, file_config.
     if file_config:
