@@ -3,26 +3,31 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import logging
 
 
-def init_logging(logger=None, level="DEBUG", log_file="", file_config=None, dict_config=None):
+def init_logging(logger=None, level="DEBUG", log_file="", init_handler=None,
+                 max_count=30, file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
+        fmt = "%(asctime)s - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
+        datefmt = "%Y-%m-%d %H:%M:%S"
+        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+        level = getattr(logging, level.upper())
+
+        if log_file:
+            if init_handler:
+                handler = init_handler(log_file, max_count)
+            else:
+                from logging.handlers import TimedRotatingFileHandler
+                handler = TimedRotatingFileHandler(log_file, when="midnight",
+                                                   interval=1, backupCount=max_count)
+        else:
+            handler = logging.StreamHandler()
+        handler.setLevel(level)
+        handler.setFormatter(formatter)
+
         loggers = logger if isinstance(logger, (list, tuple)) else [logger]
         for logger in loggers:
-            fmt = "%(asctime)s - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
-            datefmt = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
-
-            level = getattr(logging, level.upper())
             logger.setLevel(level)
-
-            if log_file:
-                from logging.handlers import TimedRotatingFileHandler
-                handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=30)
-            else:
-                handler = logging.StreamHandler()
-            handler.setLevel(level)
-            handler.setFormatter(formatter)
-
             logger.addHandler(handler)
 
     # Initialize logging by the configuration file, file_config.
