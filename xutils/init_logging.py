@@ -5,7 +5,7 @@ import logging
 
 
 def init_logging(logger=None, level="DEBUG", log_file="", init_handler=None,
-                 max_count=30, file_config=None, dict_config=None):
+                 max_count=30, propagate=False, file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
         fmt = "%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
@@ -26,13 +26,7 @@ def init_logging(logger=None, level="DEBUG", log_file="", init_handler=None,
         handler.setLevel(level)
         handler.setFormatter(formatter)
 
-        if isinstance(logger, (list, tuple)):
-            propagate = False
-            loggers = logger
-        else:
-            propagate = True
-            loggers = [logger]
-
+        loggers = logger if isinstance(logger, (list, tuple)) else [logger]
         for logger in loggers:
             logger.propagate = propagate
             logger.setLevel(level)
