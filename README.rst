@@ -17,6 +17,7 @@ A fragmentary Python library.
 * osloi18n
 * password
 * server
+* greentask
 * url
 * version
 * xml2json
@@ -25,6 +26,14 @@ Install
 =======
 
 ``$ pip install xutils``
+
+or
+
+``$ easy_install xutils``
+
+or
+
+``$ python setup.py install``
 
 Notice
 ------
