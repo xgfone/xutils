@@ -1,4 +1,9 @@
 # encoding: utf-8
+try:
+    import xutils.task
+except Exception:
+    pass
+
 import sys
 
 # On Python(>=2.7), sys.version_info[0] <==> sys.version_info.major

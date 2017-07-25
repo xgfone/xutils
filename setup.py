@@ -13,7 +13,7 @@ with open(README_FILE) as f:
 
 setup(
     name="xutils",
-    version="0.9",
+    version="0.10",
     description="A Fragmentary Python Library.",
     long_description=long_description,
     author="xgfone",
