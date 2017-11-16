@@ -1,4 +1,4 @@
-xutils
+xutils(DEPRECATED)
 ======
 
 A fragmentary Python library.
