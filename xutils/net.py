@@ -18,7 +18,7 @@ for i in range(0, 33):
 def normalize_ip_subnet(ip):
     ip, mask = ip.split("/")
     ip = struct_unpack("!I", inet_aton(ip))[0] & _IP_MASK_CACHES[int(mask)]
-    return inet_ntoa(struct_pack("!I", ip))
+    return "{}/{}".format(inet_ntoa(struct_pack(fmt, ip)), mask)
 
 
 if sys.version_info[0] == 2:
