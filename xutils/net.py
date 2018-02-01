@@ -6,6 +6,21 @@ import netaddr
 import logging
 import netifaces
 
+from socket import inet_aton, inet_ntoa
+from struct import pack as struct_pack, unpack as struct_unpack
+
+_ALL_IP_MASK = 2 ** 32 - 1
+_IP_MASK_CACHES = {}
+for i in range(0, 33):
+    _IP_MASK_CACHES[i] = (_ALL_IP_MASK >> i) ^ _ALL_IP_MASK
+
+
+def normalize_ip_subnet(ip):
+    ip, mask = ip.split("/")
+    ip = struct_unpack("!I", inet_aton(ip))[0] & _IP_MASK_CACHES[int(mask)]
+    return inet_ntoa(struct_pack("!I", ip))
+
+
 if sys.version_info[0] == 2:
     PY3 = False
     text_type = unicode
