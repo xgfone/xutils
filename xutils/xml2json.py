@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """xml2json.py  Convert XML to JSON
 
 Relies on ElementTree for the XML parsing.  This is based on
@@ -33,11 +31,8 @@ that completely if it makes more sense...
 
 R. White, 2006 November 6
 """
-from __future__ import print_function, absolute_import
 
-import sys
 import json
-import argparse
 
 try:
     import xml.etree.cElementTree as ET
@@ -200,58 +195,3 @@ def xml2dict(xmlstring, strip_ns=1, strip=1):
 def dict2xml(dict_data, factory=ET.Element):
     elem = internal_to_elem(dict_data, factory)
     return ET.tostring(elem)
-
-
-def main():
-    p = argparse.ArgumentParser(
-        description=('Converts XML to JSON or the other way around. Reads from'
-                     ' standard input by default, or from file if given.'),
-        prog='xml2json',
-        usage='%(prog)s -t xml2json -o file.json [file]'
-    )
-    p.add_argument('--type', '-t', help="'xml2json' or 'json2xml'", default="xml2json")
-    p.add_argument('--out', '-o', help="Write to the file 'OUT' instead of stdout")
-    p.add_argument('--fin', '-f', help="Read from the file 'IN' instead of stdin")
-    p.add_argument(
-        '--strip_text', action="store_true",
-        dest="strip_text", help="Strip text for xml2json")
-    p.add_argument(
-        '--pretty', action="store_true",
-        dest="pretty", help="Format JSON output so it is easier to read")
-    p.add_argument(
-        '--strip_namespace', action="store_true",
-        dest="strip_ns", help="Strip namespace for xml2json")
-    p.add_argument(
-        '--strip_newlines', action="store_true",
-        dest="strip_nl", help="Strip newlines for xml2json")
-    args = p.parse_args()
-
-    if args.fin:
-        with open(args.fin) as f:
-            data = f.read()
-    else:
-        #data = input()
-        data = sys.stdin.readline()
-
-    strip = 0
-    strip_ns = 0
-    if args.strip_text:
-        strip = 1
-    if args.strip_ns:
-        strip_ns = 1
-    if args.strip_nl:
-        data = data.replace('\n', '').replace('\r', '')
-    if args.type == "xml2json":
-        out = xml2json(data, args.pretty, strip_ns, strip)
-    else:
-        out = json2xml(data)
-
-    if args.out:
-        file = open(args.out, 'w')
-        file.write(out)
-        file.close()
-    else:
-        print(out)
-
-if __name__ == "__main__":
-    main()

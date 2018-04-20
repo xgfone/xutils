@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-# encoding: utf-8
-from __future__ import absolute_import
+# -*- coding: utf-8 -*-
 
 import os.path
-
 import smtplib
 import mimetypes
+
+from email.utils import formatdate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -55,45 +54,60 @@ class EMail(object):
     }
 
     def __init__(self, username=None, password=None, _from=None, host=None,
-                 port=25, postfix=None):
+                 port=25, postfix=None, keepalived=False):
         self.username = username
         self.password = password
         self.host = host
         self.port = port
         self.postfix = postfix
         self._from = _from
+        self._keepalived = keepalived
+        self._server = None
 
-    def send(self, tos, msg, host=None, port=None, username=None, password=None,
-             _from=None):
-        host = host if host else self.host
-        port = port if port else self.port
-        username = username if username else self.username
-        password = password if password else self.password
-        _from = _from if _from else self._from
-
-        if not host or not port or not _from or not tos or not msg:
+    def get_connect(self, host, port, username, password, reset=False):
+        if not host or not port:
             raise ValueError("invalid arguments")
 
         server = smtplib.SMTP()
         server.connect(host, port)
         server.login(username, password)
-        server.sendmail(_from, tos, msg.as_string())
-        server.close()
-        # server.quit()
+        if reset:
+            self._server = server
+        return server
+
+    def send(self, tos, msg):
+        if self._server:
+            server = self._server
+        else:
+            server = self.get_connect(self.host, self.port, self.username,
+                                      self.password)
+
+        try:
+            server.sendmail(self._from, tos, msg.as_string())
+        except Exception:
+            self._server = None
+            server.close()
+            raise
+        else:
+            if self._keepalived:
+                self._server = server
+            else:
+                server.close()
+
+    def _pad_header(self, msg, subject, tos):
+        msg["Subject"] = subject
+        msg["From"] = self._from
+        msg["To"] = ";".join(tos)
+        msg["Date"] = formatdate()
+        return msg
 
     def get_simple_msg(self, to_list, subject, content='', subtype="html", charset="utf8"):
         msg = MIMEText(content, subtype, charset)
-        msg["Subject"] = subject
-        msg["From"] = self._from
-        msg["To"] = ";".join(to_list)
-        return msg
+        return self._pad_header(msg, subject, to_list)
 
     def get_message(self, to_list, subject, content='', subtype="html", charset="utf8",
                     attachmets=None, content_type="application/octet-stream"):
-        msg = MIMEMultipart()
-        msg["From"] = self._from
-        msg["To"] = ';'.join((to_list))
-        msg["Subject"] = subject
+        msg = self._pad_header(MIMEMultipart(), subject, to_list)
 
         att = MIMEText(content, subtype, charset)
         msg.attach(att)
@@ -128,54 +142,3 @@ class EMail(object):
                                charset=charset, attachmets=attachmets,
                                content_type=content_type)
         self.send(to_list, msg)
-
-
-def test():
-    host = "smtp.grandcloud.cn"
-    port = 25
-    username = "xgfone"
-    passwd = "123456"
-    _from = "xgfone@126.com"
-    _tos = ["xgfone@126.com"]
-    subject = "test"
-    content = "test"
-
-    # with open("img.gif", "r+b") as f:
-    #     data1 = f.read()
-    # with open("syncdb.tar.gz", 'r+b') as f:
-    #     data2 = f.read()
-    # with open("test.docx", 'r+b') as f:
-    #     data3 = f.read()
-    # with open("test.txt", encoding="utf8") as f:
-    #     data4 = f.read()
-    # attachmets = [
-    #     {
-    #         "content": data1,
-    #         "filename": "img.gif",
-    #         # "content-type": "image/gif"
-    #     },
-    #     {
-    #         "content": data2,
-    #         "filename": "syncdb.tar.gz",
-    #         # "content-type": "application/x-tar"
-    #     },
-    #     {
-    #         "content": data3,
-    #         "filename": "test.doc",
-    #         # "content-type": "application/msword",
-    #     },
-    #     {
-    #         "content": data4,
-    #         "filename": "test.txt",
-    #         # "content-type": "text/plain",
-    #         # "charset": "utf8",
-    #     },
-    # ]
-
-    mail = EMail(username, passwd, _from, host, port)
-    mail.send_message(_tos, subject, content=content)
-    # mail.send_message(_tos, subject, content=content, attachmets=attachmets)
-
-
-if __name__ == "__main__":
-    test()

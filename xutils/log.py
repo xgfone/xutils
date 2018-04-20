@@ -1,25 +1,26 @@
-# encoding: utf-8
-from __future__ import print_function, absolute_import, unicode_literals, division
+# -*- coding: utf-8 -*-
 
 import logging
 
+from logging.handlers import TimedRotatingFileHandler
 
-def init_logging(logger=None, level="DEBUG", log_file="", init_handler=None,
-                 max_count=30, propagate=False, file_config=None, dict_config=None):
+
+def init(logger=None, level="INFO", file=None, handler_cls=None,
+         max_count=30, propagate=False, file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
-        fmt = "%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s"
+        fmt = ("%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - "
+               "%(lineno)d - %(levelname)s - %(message)s")
         datefmt = "%Y-%m-%d %H:%M:%S"
         formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
 
         level = getattr(logging, level.upper())
 
-        if log_file:
-            if init_handler:
-                handler = init_handler(log_file, max_count)
+        if file:
+            if handler_cls:
+                handler = handler_cls(file, max_count)
             else:
-                from logging.handlers import TimedRotatingFileHandler
-                handler = TimedRotatingFileHandler(log_file, when="midnight",
+                handler = TimedRotatingFileHandler(file, when="midnight",
                                                    interval=1, backupCount=max_count)
         else:
             handler = logging.StreamHandler()

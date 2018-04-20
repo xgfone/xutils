@@ -1,20 +1,36 @@
-# encoding: utf-8
-try:
-    import xutils.task
-except Exception:
-    pass
+# -*- coding: utf-8 -*-
 
 import sys
 
-# On Python(>=2.7), sys.version_info[0] <==> sys.version_info.major
-if sys.version_info[0] == 2:
-    PY2, PY3 = True, False
-    byte_type, text_type, string_type = str, unicode, basestring
+if sys.version_info[0] < 3:
+    PY3, Unicode, Bytes = False, unicode, str
 else:
-    PY2, PY3 = False, True
-    byte_type, text_type, string_type = bytes, str, str
+    PY3, Unicode, Bytes = True, str, bytes
 
-Bytes, Unicode, String = byte_type, text_type, string_type
-to_bytes = lambda v, e="utf-8": v.encode(e) if isinstance(v, Unicode) else v
-to_unicode = lambda v, e="utf-8": v.decode(e) if isinstance(v, Bytes) else v
+
+def to_bytes(v, encoding="utf-8", errors="strict"):
+    if isinstance(v, Bytes):
+        return v
+    elif isinstance(v, Unicode):
+        return v.encode(encoding, errors)
+    return to_bytes(str(v), encoding=encoding, errors=errors)
+
+
+def to_unicode(v, encoding="utf-8", errors="strict"):
+    if isinstance(v, Bytes):
+        return v.decode(encoding, errors)
+    elif isinstance(v, Unicode):
+        return v
+    return to_unicode(str(v), encoding=encoding, errors=errors)
+
+
 to_str = to_unicode if PY3 else to_bytes
+is_bytes = lambda s: isinstance(s, Bytes)
+is_unicode = lambda s: isinstance(s, Unicode)
+is_string = lambda s: isinstance(s, (Bytes, Unicode))
+
+
+class Object(object):
+    def __repr__(self):
+        ss = ("%s=%s" % (k, v) for k, v in vars(self).items() if not k.startswith("_"))
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(ss))

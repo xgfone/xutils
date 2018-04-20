@@ -60,3 +60,6 @@ target/
 tags
 ctags
 ctag
+
+# VS Code
+.vscode/

@@ -1,9 +1,9 @@
+import os.path
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-
-import os.path
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 README_FILE = os.path.join(ROOT_DIR, "README.rst")
@@ -13,8 +13,8 @@ with open(README_FILE) as f:
 
 setup(
     name="xutils",
-    version="0.10",
-    description="A Fragmentary Python Library.",
+    version="1.0.0",
+    description="A Fragmentary Python Library, no any third-part dependencies.",
     long_description=long_description,
     author="xgfone",
     author_email="xgfone@126.com",
@@ -27,7 +27,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
