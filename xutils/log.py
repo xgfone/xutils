@@ -6,7 +6,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 def init(logger=None, level="INFO", file=None, handler_cls=None,
-         max_count=30, propagate=False, file_config=None, dict_config=None):
+         max_count=30, propagate=True, file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
         fmt = ("%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - "
