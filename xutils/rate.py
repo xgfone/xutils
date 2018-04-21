@@ -36,5 +36,17 @@ class Rate(object):
             time.sleep(self._interval)
 
     def get_token(self):
+        """Return a token if exists. Or it will be blocked."""
+
         self._queue.get()
         self._queue.task_done()
+
+    def allow(self):
+        """Return True if there is a token, or False. It never be blocked."""
+
+        try:
+            self._queue.get_nowait()
+        except Exception:
+            return False
+        else:
+            return True
