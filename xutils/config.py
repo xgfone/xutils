@@ -1,9 +1,42 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os.path
 
 from argparse import ArgumentParser
 from xutils import is_string
+
+
+def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc")):
+    """Find the config file path.
+
+    If name has no ext, it will be appended with .conf.
+    If dir is empty, it will be the current directory by default.
+
+    The lookup order is as follow,
+    /{dir}/{name}/{name}.conf
+    /opt/{name}/{name}.conf
+    /etc/{name}/{name}.conf
+    /{dir}/{name}.conf
+    /opt/{name}.conf
+    /etc/{name}.conf
+    """
+
+    path = os.path.abspath(os.path.expanduser(dir if dir else "."))
+    name, ext = os.path.splitext(name)
+    filename = name + ".conf" if not ext or ext == "." else name
+
+    dirs = list(extra_dirs) if extra_dirs else []
+    if path not in dirs:
+        dirs = [path] + dirs
+
+    dirs = [os.path.join(d, name) for d in dirs] + dirs
+    for d in dirs:
+        filepath = os.path.join(d, filename)
+        if os.path.exists(filepath):
+            return filepath
+
+    raise RuntimeError("Not found %s" % filename)
 
 
 class Configuration(object):
