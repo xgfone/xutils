@@ -21,17 +21,22 @@ for v in vars(falcon.status_codes).values():
             pass
 
 
-class Application(falcon.API):
-    def to_status(self, status):
+class Resource(object):
+    def status(self, status):
         if isinstance(status, int):
             return STATUS_CODES[status]
         return status
 
-    def json(self, req, resp, result, status=None, separators=(',', ':')):
+    def load_json(self, req):
+        return json.loads(req.data) if req.data else None
+
+    def dump_json(self, resp, result, status=None, separators=(',', ':')):
         resp.body = json.dumps(result, separators=separators)
         resp.content_type = falcon.MEDIA_JSON
-        resp.status = self.to_status(status or falcon.HTTP_200)
+        resp.status = self.status(status or falcon.HTTP_200)
 
+
+class Application(falcon.API):
     def append_error_handler(self, exception, handler=None):
         self._error_handlers.append((exception, handler or exception.handle))
 
@@ -141,12 +146,12 @@ if __name__ == "__main__":
     class WSGIServer(ThreadingMixIn, _WSGIServer):
         daemon_threads = True
 
-    class Resource(object):
+    class _Resource(object):
         def hello(self, req, resp, name):
             resp.body = name
 
     application = Application()
-    resource = Resource()
+    resource = _Resource()
     application.add_route("/v1/hello/{name}", resource, "hello")
     application.add_route("/v2/hello/{name}", resource, resource.hello)
     application.add_route("/v3/hello/{name}", resource, resource.hello, "GET")
