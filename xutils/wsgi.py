@@ -28,7 +28,8 @@ class Resource(object):
         return status
 
     def load_json(self, req):
-        return json.loads(req.data) if req.data else None
+        data = req.bounded_stream.read()
+        return json.loads(data) if data else None
 
     def dump_json(self, resp, result, status=None, separators=(',', ':')):
         resp.body = json.dumps(result, separators=separators)
