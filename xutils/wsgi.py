@@ -9,6 +9,12 @@ import traceback
 import falcon
 import xutils
 
+from wsgiref.simple_server import WSGIRequestHandler, WSGIServer as _WSGIServer
+try:
+    from socketserver import ThreadingMixIn
+except ImportError:
+    from SocketServer import ThreadingMixIn
+
 LOG = logging.getLogger("gunicorn.error" if "gunicorn" in sys.modules else __name__)
 
 STATUS_CODES = {}
@@ -19,6 +25,18 @@ for v in vars(falcon.status_codes).values():
             STATUS_CODES[code] = v
         except Exception:
             pass
+
+
+class WSGIServer(ThreadingMixIn, _WSGIServer):
+    daemon_threads = True       # The entire program exits when the main thread left.
+    timeout = 30                # Wait until a request arrives or the timeout expires
+    request_queue_size = 128    # The bocklog size of the listening socket
+    allow_reuse_address = True  # Reuse the address listened to
+
+    def __init__(self, addr, application, RequestHandlerClass=WSGIRequestHandler,
+                 bind_and_activate=True):
+        super(WSGIServer, self).__init__(addr, RequestHandlerClass, bind_and_activate)
+        self.set_app(application)
 
 
 class Resource(object):
@@ -56,72 +74,36 @@ class Application(falcon.API):
         """Map the HTTP methods.
 
         Support:
-            ### The Old API
-            >>> add_route("/path/to", resource)
-
-            ### New API
-            >>> add_route("/path/to", resource, "resource_method")  # Default GET
-            >>> add_route("/path/to", resource, "resource_method", "GET")
-            >>> add_route("/path/to", resource, "resource_method", "GET", "POST")
-            >>> add_route("/path/to", resource, "resource_method", ["GET", "POST"])
-            >>>
-            >>> add_route("/path/to", resource, callable_action)  # Default GET
-            >>> add_route("/path/to", resource, callable_action, "GET")
-            >>> add_route("/path/to", resource, callable_action, "GET", "POST")
-            >>> add_route("/path/to", resource, callable_action, ["GET", "POST"])
-            >>>
-            >>> add_route("/path/to", resource, "resource_method", methods="GET")
-            >>> add_route("/path/to", resource, "resource_method", methods=["GET"])
-            >>>
-            >>> add_route("/path/to", resource, callable_action, methods="GET")
-            >>> add_route("/path/to", resource, callable_action, methods=["GET"])
-            >>>
-            >>> add_route("/path/to", resource, action="resource_method", methods="GET")
-            >>> add_route("/path/to", resource, action="resource_method", methods=["GET"])
-            >>>
-            >>> add_route("/path/to", resource, action=callable_action, methods="GET")
-            >>> add_route("/path/to", resource, action=callable_action, methods=["GET"])
+            >>> add_route("/path/to", resource) # The origin
+            >>> add_route("/path/to", resource, map={"GET": "resource_method"})
+            >>> add_route("/path/to", resource, map={"GET": resource.method})
+            >>> add_route("/path/to", resource, get="resource_method")
+            >>> add_route("/path/to", resource, get=resource.method)
 
         For Example:
             >>> class Resource(object):
-            >>>     def hello(self, req, resp, name):
+            >>>     def on_get(self, req, resp, name):
             >>>         resp.body = name
             >>>
             >>> resource = Resource()
-            >>> add_route("/v1/hello/{name}", resource, "hello")
-            >>> add_route("/v2/hello/{name}", resource, resource.hello)
-            >>> add_route("/v3/hello/{name}", resource, resource.hello, "GET")
+            >>> add_route("/v1/hello/{name}", resource)
+            >>> add_route("/v2/hello/{name}", resource, map={"GET": "on_get"})
+            >>> add_route("/v3/hello/{name}", resource, map={"GET": resource.on_get})
+            >>> add_route("/v3/hello/{name}", resource, get="on_get")
+            >>> add_route("/v3/hello/{name}", resource, get=resource.on_get)
         """
 
-        if not args and not kwargs:
-            return falcon.routing.map_http_methods(resource)
+        m = kwargs.pop("map", None)
+        if m:
+            return {k.upper(): self._get_action(resource, v) for k, v in m.items()}
 
-        _map = kwargs.get("map", None)
-        if _map:
-            return {k: self._get_action(resource, v) for k, v in _map.items()}
+        mmap = {}
+        for method in tuple(kwargs.keys()):
+            _method = method.upper()
+            if _method in falcon.COMBINED_METHODS:
+                mmap[_method] = self._get_action(resource, kwargs.pop(method))
 
-        if args:
-            action = args[0]
-            methods = args[1:]
-            if not methods:
-                methods = kwargs.pop("methods", None)
-        else:
-            action = kwargs.pop("action", None)
-            methods = kwargs.pop("methods", None)
-
-        if not action:
-            raise ValueError("no action")
-
-        action = self._get_action(resource, action)
-        if not methods:
-            methods = ["GET"]
-        if not isinstance(methods, (list, tuple)):
-            methods = [methods]
-
-        args.clear()
-        kwargs.pop("action", None)
-        kwargs.pop("methods", None)
-        return {method.upper(): action for method in methods}
+        return mmap if mmap else falcon.routing.map_http_methods(resource)
 
     def add_route(self, uri_template, resource, *args, **kwargs):
         if not uri_template.startswith('/'):
@@ -137,27 +119,20 @@ class Application(falcon.API):
 
 
 if __name__ == "__main__":
-    from wsgiref.simple_server import make_server, WSGIServer as _WSGIServer
-
-    try:
-        from socketserver import ThreadingMixIn
-    except ImportError:
-        from SocketServer import ThreadingMixIn
-
-    class WSGIServer(ThreadingMixIn, _WSGIServer):
-        daemon_threads = True
 
     class _Resource(object):
-        def hello(self, req, resp, name):
+        def on_get(self, req, resp, name):
             resp.body = name
 
     application = Application()
     resource = _Resource()
-    application.add_route("/v1/hello/{name}", resource, "hello")
-    application.add_route("/v2/hello/{name}", resource, resource.hello)
-    application.add_route("/v3/hello/{name}", resource, resource.hello, "GET")
+    application.add_route("/v1/hello/{name}", resource)
+    application.add_route("/v2/hello/{name}", resource, map={"GET": "on_get"})
+    application.add_route("/v3/hello/{name}", resource, map={"GET": resource.on_get})
+    application.add_route("/v4/hello/{name}", resource, get="on_get")
+    application.add_route("/v5/hello/{name}", resource, get=resource.on_get)
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8888
-    with make_server("", port, application, WSGIServer) as httpd:
+    with WSGIServer(("", port), application) as httpd:
         print("WSGI server listening on %s" % port)
         httpd.serve_forever()
