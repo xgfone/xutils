@@ -9,6 +9,9 @@ def check_output(cmd, timeout=None, encoding=None, stderr=None, **kwargs):
 
     If ``stderr`` is True, it will capture the standard error in the result.
     If ``stderr`` is None or False, it will ignore the standard error.
+
+    (NOTE): It will wrap the CalledProcessError exception, then reraise it
+    by RuntimeError.
     """
 
     if major >= 3 and minor >= 3:
@@ -19,7 +22,10 @@ def check_output(cmd, timeout=None, encoding=None, stderr=None, **kwargs):
     elif stderr is False:
         stderr = None
 
-    out = _check_output(cmd, stderr=stderr, **kwargs)
+    try:
+        out = _check_output(cmd, stderr=stderr, **kwargs)
+    except CalledProcessError as err:
+        raise RuntimeError(err.output or str(err))
     return to_unicode(out, encoding) if encoding else out
 
 
