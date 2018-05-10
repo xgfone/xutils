@@ -45,14 +45,20 @@ class Resource(object):
             return STATUS_CODES[status]
         return status
 
+    def respond(self, resp, status=None, body=None, content_type=None):
+        resp.status = self.status(status or falcon.HTTP_200)
+        if content_type:
+            resp.content_type = content_type
+        if body:
+            resp.body = body
+
+    def dump_json(self, resp, result, status=None, separators=(',', ':')):
+        body = json.dumps(result, separators=separators)
+        self.respond(resp, status, body, falcon.MEDIA_JSON)
+
     def load_json(self, req):
         data = req.bounded_stream.read()
         return json.loads(data) if data else None
-
-    def dump_json(self, resp, result, status=None, separators=(',', ':')):
-        resp.body = json.dumps(result, separators=separators)
-        resp.content_type = falcon.MEDIA_JSON
-        resp.status = self.status(status or falcon.HTTP_200)
 
 
 class Application(falcon.API):
