@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from subprocess import STDOUT, check_output as _check_output
+from subprocess import STDOUT, CalledProcessError, check_output as _check_output
 from xutils import major, minor, to_unicode, is_string
 
 
@@ -34,11 +34,10 @@ def which(command, reraise=False, encoding="utf-8", which="/usr/bin/which"):
         raise ValueError("the first argument 'command' must be string")
 
     try:
-        lines = to_unicode(check_output([which, command]), encoding).split("\n")
-        cmds = [line for line in lines if line]
-    except Exception:
-        cmds = []
-
-    if cmds or not reraise:
-        return cmds
-    raise RuntimeError("not found '%s'" % command)
+        out = check_output([which, command], timeout=3, encoding=encoding,
+                           stderr=True)
+        return [line for line in out.split("\n") if line]
+    except CalledProcessError as err:
+        if reraise:
+            raise RuntimeError(err.output or str(err))
+        return []
