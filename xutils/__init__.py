@@ -2,7 +2,8 @@
 
 import sys
 
-if sys.version_info[0] < 3:
+major, minor, micro = sys.version_info[:3]
+if major < 3:
     PY3, Unicode, Bytes = False, unicode, str
 else:
     PY3, Unicode, Bytes = True, str, bytes
