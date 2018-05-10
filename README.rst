@@ -16,6 +16,7 @@ A fragmentary Python library, no any third-part dependencies but ``sqlalchemy`` 
 * retry call
 * sending email
 * sqlalchemy
+* util
 * wsgi
 * xml2json
 
