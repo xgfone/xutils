@@ -8,6 +8,7 @@ A fragmentary Python library, no any third-part dependencies but ``sqlalchemy`` 
 * circuit breaker
 * const
 * life manager
+* messager
 * network
 * process manager
 * resource lock
