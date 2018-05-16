@@ -61,22 +61,11 @@ class Resource(object):
         return json.loads(data) if data else None
 
 
-class Application(falcon.API):
-    def append_error_handler(self, exception, handler=None):
-        self._error_handlers.append((exception, handler or exception.handle))
-
-    def traceback_exception(self, ex, req, resp, params):
-        resp.content_type = falcon.MEDIA_TEXT
-        resp.status = falcon.HTTP_500
-        resp.body = str(ex)
-        LOG.error("Get an exception: method=%s, url=%s, err=%s",
-                  req.method, req.path, ex)
-        LOG.error(traceback.format_exc())
-
+class Router(falcon.routing.DefaultRouter):
     def _get_action(self, resource, action):
         return action if callable(action) else getattr(resource, action)
 
-    def map_http_methods(self, resource, args, kwargs):
+    def map_http_methods(self, resource, **kwargs):
         """Map the HTTP methods.
 
         Support:
@@ -109,19 +98,41 @@ class Application(falcon.API):
             if _method in falcon.COMBINED_METHODS:
                 mmap[_method] = self._get_action(resource, kwargs.pop(method))
 
-        return mmap if mmap else falcon.routing.map_http_methods(resource)
+        return mmap if mmap else self.map_http_methods(resource, **kwargs)
 
-    def add_route(self, uri_template, resource, *args, **kwargs):
+
+def append_error_handler(app, exception, handler=None):
+    app._error_handlers.append((exception, handler or exception.handle))
+
+
+def traceback_exception(ex, req, resp, params):
+    resp.content_type = falcon.MEDIA_TEXT
+    resp.status = falcon.HTTP_500
+    resp.body = str(ex)
+    LOG.error("Get an exception: method=%s, url=%s, err=%s",
+              req.method, req.path, ex)
+    LOG.error(traceback.format_exc())
+
+
+if falcon.__version__[0] == "1":
+    def _add_route(self, uri_template, resource, *args, **kwargs):
+        if not xutils.is_string(uri_template):
+            raise TypeError('uri_template is not a string')
+
         if not uri_template.startswith('/'):
             raise ValueError("uri_template must start with '/'")
 
         if '//' in uri_template:
             raise ValueError("uri_template may not contain '//'")
 
-        args = list(args)
-        method_map = self.map_http_methods(resource, args, kwargs)
+        if kwargs and hasattr(self._router, "map_http_methods"):
+            method_map = self._router.map_http_methods(resource, **kwargs)
+        else:
+            method_map = falcon.routing.map_http_methods(resource)
         falcon.routing.set_default_responders(method_map)
-        self._router.add_route(uri_template, method_map, resource, *args, **kwargs)
+        self._router.add_route(uri_template, method_map, resource)
+
+    falcon.API.add_route = _add_route
 
 
 if __name__ == "__main__":
@@ -130,15 +141,16 @@ if __name__ == "__main__":
         def on_get(self, req, resp, name):
             resp.body = name
 
-    application = Application()
     resource = _Resource()
-    application.add_route("/v1/hello/{name}", resource)
-    application.add_route("/v2/hello/{name}", resource, map={"GET": "on_get"})
-    application.add_route("/v3/hello/{name}", resource, map={"GET": resource.on_get})
-    application.add_route("/v4/hello/{name}", resource, get="on_get")
-    application.add_route("/v5/hello/{name}", resource, get=resource.on_get)
+    app = falcon.API(router=Router())
+    append_error_handler(app, Exception, traceback_exception)
+    app.add_route("/v1/hello/{name}", resource)
+    app.add_route("/v2/hello/{name}", resource, map={"GET": "on_get"})
+    app.add_route("/v3/hello/{name}", resource, map={"GET": resource.on_get})
+    app.add_route("/v4/hello/{name}", resource, get="on_get")
+    app.add_route("/v5/hello/{name}", resource, get=resource.on_get)
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8888
-    with WSGIServer(("", port), application) as httpd:
+    with WSGIServer(("", port), app) as httpd:
         print("WSGI server listening on %s" % port)
         httpd.serve_forever()
