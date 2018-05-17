@@ -17,6 +17,7 @@ except ImportError:
 
 LOG = logging.getLogger("gunicorn.error" if "gunicorn" in sys.modules else __name__)
 
+Application = API = falcon.API
 STATUS_CODES = {}
 for v in vars(falcon.status_codes).values():
     if xutils.is_string(v):
