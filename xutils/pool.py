@@ -56,8 +56,8 @@ class _ResourcePoolSession(object):
 
 
 class ResourcePool(object):
-    def __init__(self, cls, *args, capacity=0, idle_timeout=None, autowrap=False,
-                 close_on_exc=False, **kwargs):
+    def __init__(self, cls, capacity=0, idle_timeout=None, autowrap=False,
+                 close_on_exc=False, **cls_kwargs):
         """Create a new pool object.
 
         @param cls(object): The object class to be manage.
@@ -100,8 +100,7 @@ class ResourcePool(object):
         capacity = capacity if capacity >= 0 else 0
 
         self._cls = cls
-        self._args = args
-        self._kwargs = kwargs
+        self._kwargs = cls_kwargs
 
         self._closed = False
         self._lock = Lock()
@@ -165,7 +164,7 @@ class ResourcePool(object):
                 obj = self._pools.get_nowait()
                 self._pools.task_done()
             except Empty:
-                obj = (self._cls(*self._args, **self._kwargs), self._get_now())
+                obj = (self._cls(**self._kwargs), self._get_now())
         else:
             obj = self._pools.get(timeout=timeout)
             self._pools.task_done()
@@ -175,7 +174,7 @@ class ResourcePool(object):
                 return _get(self.get(timeout=timeout))
             return _get(obj[0])
 
-        return _get(self._cls(*self._args, **self._kwargs))
+        return _get(self._cls(**self._kwargs))
 
     def put(self, obj):
         """Put an object into the pool.

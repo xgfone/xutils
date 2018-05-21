@@ -291,9 +291,15 @@ class CircuitBreakerMonitor(object):
         return [cb for cb in cls.circuit_breakers.values() if cb.is_closed]
 
 
-def circuit_breaker(*args, cls=CircuitBreaker, **kwargs):
+def circuit_breaker(*args, **kwargs):
     """The decorator of CircuitBreaker.
+
+    Args:
+        cls(CircuitBreaker or subclass): The Class of Circuit Breaker.
     """
+
+    # For compatible with Python 2.X.
+    cls = kwargs.pop("cls", CircuitBreaker)
 
     if args and callable(args[0]):
         return cls()(args[0])
