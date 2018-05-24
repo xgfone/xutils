@@ -28,7 +28,7 @@ for v in vars(falcon.status_codes).values():
             pass
 
 
-class WSGIServer(ThreadingMixIn, _WSGIServer):
+class WSGIServer(ThreadingMixIn, _WSGIServer, object):
     daemon_threads = True       # The entire program exits when the main thread left.
     timeout = 30                # Wait until a request arrives or the timeout expires
     request_queue_size = 128    # The bocklog size of the listening socket
