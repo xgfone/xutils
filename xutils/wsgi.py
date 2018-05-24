@@ -22,7 +22,7 @@ STATUS_CODES = {}
 for v in vars(falcon.status_codes).values():
     if xutils.is_string(v):
         try:
-            code = int(v.split(maxsplit=1)[0])
+            code = int(v.split()[0])
             STATUS_CODES[code] = v
         except Exception:
             pass
