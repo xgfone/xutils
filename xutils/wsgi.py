@@ -106,13 +106,25 @@ def append_error_handler(app, exception, handler=None):
     app._error_handlers.append((exception, handler or exception.handle))
 
 
-def traceback_exception(ex, req, resp, params):
-    resp.content_type = falcon.MEDIA_TEXT
-    resp.status = falcon.HTTP_500
-    resp.body = str(ex)
-    LOG.error("Get an exception: method=%s, url=%s, err=%s",
-              req.method, req.path, ex)
-    LOG.error(traceback.format_exc())
+def get_exception_handler(get_body=None, traceback_exception=False):
+    """Return an exception handler of falcon.
+
+    Keyword Arguments:
+        get_body (function): a function to return a response body.
+            Its arguments are the same of the exception handler of falcon,
+            that's, ``get_body(ex, req, resp, params)``. Its return value
+            will be assigned to ``resp.body``.
+    """
+
+    def _traceback_exception(ex, req, resp, params):
+        resp.content_type = falcon.MEDIA_TEXT
+        resp.status = falcon.HTTP_500
+        resp.body = get_body(ex, req, resp, params) if callable(get_body) else str(ex)
+        LOG.error("Get an exception: method=%s, url=%s, err=%s", req.method, req.uri, ex)
+        if traceback_exception:
+            LOG.error(traceback.format_exc())
+
+    return _traceback_exception
 
 
 if falcon.__version__[0] == "1":
