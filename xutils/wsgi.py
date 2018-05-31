@@ -127,25 +127,23 @@ def get_exception_handler(get_body=None, traceback_exception=False):
     return _traceback_exception
 
 
-if falcon.__version__[0] == "1":
-    def _add_route(self, uri_template, resource, *args, **kwargs):
-        if not xutils.is_string(uri_template):
-            raise TypeError('uri_template is not a string')
+def _add_route(self, uri_template, resource, *args, **kwargs):
+    if not xutils.is_string(uri_template):
+        raise TypeError('uri_template is not a string')
 
-        if not uri_template.startswith('/'):
-            raise ValueError("uri_template must start with '/'")
+    if not uri_template.startswith('/'):
+        raise ValueError("uri_template must start with '/'")
 
-        if '//' in uri_template:
-            raise ValueError("uri_template may not contain '//'")
+    if '//' in uri_template:
+        raise ValueError("uri_template may not contain '//'")
 
-        if kwargs and hasattr(self._router, "map_http_methods"):
-            method_map = self._router.map_http_methods(resource, **kwargs)
-        else:
-            method_map = falcon.routing.map_http_methods(resource)
-        falcon.routing.set_default_responders(method_map)
-        self._router.add_route(uri_template, method_map, resource)
-
-    falcon.API.add_route = _add_route
+    if kwargs and hasattr(self._router, "map_http_methods"):
+        method_map = self._router.map_http_methods(resource, **kwargs)
+    else:
+        method_map = falcon.routing.map_http_methods(resource)
+    falcon.routing.set_default_responders(method_map)
+    self._router.add_route(uri_template, method_map, resource)
+falcon.API.add_route = _add_route
 
 
 if __name__ == "__main__":
@@ -156,7 +154,7 @@ if __name__ == "__main__":
 
     resource = _Resource()
     app = falcon.API(router=Router())
-    append_error_handler(app, Exception, traceback_exception)
+    append_error_handler(app, Exception, get_exception_handler())
     app.add_route("/v1/hello/{name}", resource)
     app.add_route("/v2/hello/{name}", resource, map={"GET": "on_get"})
     app.add_route("/v3/hello/{name}", resource, map={"GET": resource.on_get})
