@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import os
+import os.path
 import logging
 
 from logging.handlers import RotatingFileHandler
 
 
-def init(logger=None, level="INFO", file=None, handler_cls=None,
+def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
          max_count=30, propagate=True, file_config=None, dict_config=None):
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
@@ -17,6 +19,12 @@ def init(logger=None, level="INFO", file=None, handler_cls=None,
         level = getattr(logging, level.upper())
 
         if file:
+            if process:
+                filename, ext = os.path.splitext(file)
+                if ext:
+                    file = "{0}.{1}.{2}".format(filename, os.getpid(), ext)
+                else:
+                    file = "{0}.{1}".format(filename, os.getpid())
             if handler_cls:
                 handler = handler_cls(file, max_count)
             else:
