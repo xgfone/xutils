@@ -2,7 +2,7 @@
 
 import logging
 
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 
 
 def init(logger=None, level="INFO", file=None, handler_cls=None,
@@ -20,8 +20,7 @@ def init(logger=None, level="INFO", file=None, handler_cls=None,
             if handler_cls:
                 handler = handler_cls(file, max_count)
             else:
-                handler = TimedRotatingFileHandler(file, when="midnight",
-                                                   interval=1, backupCount=max_count)
+                handler = RotatingFileHandler(file, maxBytes=1024**3, backupCount=max_count)
         else:
             handler = logging.StreamHandler()
         handler.setLevel(level)
