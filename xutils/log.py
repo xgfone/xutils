@@ -26,7 +26,7 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
             if process:
                 filename, ext = os.path.splitext(file)
                 if ext:
-                    file = "{0}.{1}.{2}".format(filename, os.getpid(), ext)
+                    file = "{0}.{1}{2}".format(filename, os.getpid(), ext)
                 else:
                     file = "{0}.{1}".format(filename, os.getpid())
             if handler_cls:
