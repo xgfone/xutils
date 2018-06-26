@@ -9,6 +9,10 @@ from logging.handlers import RotatingFileHandler
 
 def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
          max_count=30, propagate=True, file_config=None, dict_config=None):
+    root = logging.getLogger()
+    if not logger:
+        logger = root
+
     # Initialize the argument logger with the arguments, level and log_file.
     if logger:
         fmt = ("%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - "
@@ -34,7 +38,6 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
         handler.setLevel(level)
         handler.setFormatter(formatter)
 
-        root = logging.getLogger()
         root.setLevel(level)
         root.addFilter(handler)
 
