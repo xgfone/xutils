@@ -34,8 +34,14 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
         handler.setLevel(level)
         handler.setFormatter(formatter)
 
+        root = logging.getLogger()
+        root.setLevel(level)
+        root.addFilter(handler)
+
         loggers = logger if isinstance(logger, (list, tuple)) else [logger]
         for logger in loggers:
+            if logger is root:
+                continue
             logger.propagate = propagate
             logger.setLevel(level)
             logger.addHandler(handler)
