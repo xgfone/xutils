@@ -25,10 +25,7 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
         if file:
             if process:
                 filename, ext = os.path.splitext(file)
-                if ext:
-                    file = "{0}.{1}{2}".format(filename, os.getpid(), ext)
-                else:
-                    file = "{0}.{1}".format(filename, os.getpid())
+                file = "{0}.{1}{2}".format(filename, os.getpid(), ext)
             if handler_cls:
                 handler = handler_cls(file, max_count)
             else:
@@ -39,7 +36,7 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
         handler.setFormatter(formatter)
 
         root.setLevel(level)
-        root.addFilter(handler)
+        root.addHandler(handler)
 
         loggers = logger if isinstance(logger, (list, tuple)) else [logger]
         for logger in loggers:
