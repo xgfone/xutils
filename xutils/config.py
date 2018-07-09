@@ -386,7 +386,13 @@ class Configuration(object):
             value = getattr(args, cli_opt, None)
             if value is not None:
                 value = opt[0](value)
-                if value != opt[1]:
+                if opt[0] == self._parse_bool:
+                    if opt[1] is None:
+                        if value:
+                            self._set_group_opt(gname, name, value, force=True)
+                    elif value != opt[1]:
+                        self._set_group_opt(gname, name, value, force=True)
+                elif value != opt[1]:
                     self._set_group_opt(gname, name, value, force=True)
 
         self._check_and_fix()
