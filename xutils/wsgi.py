@@ -9,6 +9,7 @@ import traceback
 import falcon
 import xutils
 
+from xutils.util import json_loads
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer as _WSGIServer
 try:
     from socketserver import ThreadingMixIn
@@ -59,7 +60,7 @@ class Resource(object):
 
     def load_json(self, req):
         data = req.bounded_stream.read()
-        return json.loads(data) if data else None
+        return json_loads(data) if data else None
 
 
 class Router(falcon.routing.DefaultRouter):

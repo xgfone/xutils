@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
+import json
 
 from subprocess import STDOUT, CalledProcessError, check_output as _check_output
 from xutils import major, minor, to_unicode, is_string
+
+
+def json_loads(s, **kwargs):
+    """Fix the type of s on Python 3.0 ~ 3.5 to be compatible with Python 2.7
+    or Python 3.6+."""
+
+    if major == 3 and minor < 6 and isinstance(s, (bytes, bytearray)):
+        s = s.decode(kwargs.get("encoding", "utf-8"))
+    return json.loads(s, **kwargs)
 
 
 def check_output(cmd, timeout=None, encoding=None, stderr=None, **kwargs):
