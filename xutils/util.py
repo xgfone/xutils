@@ -39,6 +39,15 @@ def check_output(cmd, timeout=None, encoding=None, stderr=None, **kwargs):
     return to_unicode(out, encoding) if encoding else out
 
 
+def subprocess_exception_to_str(exc, encoding=None):
+    if isinstance(exc, CalledProcessError):
+        if hasattr(exc, "stderr") and exc.stderr:
+            return to_unicode(exc.stderr, encoding) if encoding else exc.stderr
+        if exc.output:
+            return to_unicode(exc.output, encoding) if encoding else exc.output
+    return exc
+
+
 def which(command, reraise=False, encoding="utf-8", which="/usr/bin/which"):
     """Find and return the absolute path list of ``command`` used by ``which``.
 
