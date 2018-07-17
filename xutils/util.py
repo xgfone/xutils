@@ -45,7 +45,7 @@ def subprocess_exception_to_str(exc, encoding=None):
             return to_unicode(exc.stderr, encoding) if encoding else exc.stderr
         if exc.output:
             return to_unicode(exc.output, encoding) if encoding else exc.output
-    return exc
+    return str(exc)
 
 
 def which(command, reraise=False, encoding="utf-8", which="/usr/bin/which"):
