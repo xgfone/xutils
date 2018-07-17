@@ -17,8 +17,7 @@ def init(logger=None, level="INFO", file=None, handler_cls=None, process=False,
     if logger:
         fmt = ("%(asctime)s - %(process)d - %(pathname)s - %(funcName)s - "
                "%(lineno)d - %(levelname)s - %(message)s")
-        datefmt = "%Y-%m-%d %H:%M:%S"
-        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+        formatter = logging.Formatter(fmt=fmt)
 
         level = getattr(logging, level.upper())
 
