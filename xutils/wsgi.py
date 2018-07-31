@@ -58,8 +58,8 @@ class Resource(object):
         body = json.dumps(result, separators=separators)
         self.respond(resp, status, body, falcon.MEDIA_JSON)
 
-    def load_json(self, req):
-        data = req.bounded_stream.read()
+    def load_json(self, req, data=None):
+        data = data or req.bounded_stream.read()
         return json_loads(data) if data else None
 
 
