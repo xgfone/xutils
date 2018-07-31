@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 
 from six import Iterator
 from sqlalchemy import create_engine, text
