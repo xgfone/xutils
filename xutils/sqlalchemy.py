@@ -44,6 +44,15 @@ class DB(object):
             self._read_engine = self._write_engine
             self._read_session_cls = self._write_session_cls
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._write_engine.dispose()
+        if self._read_engine is not self._write_engine:
+            self._read_engine.dispose()
+        return False
+
     def _fix_charset(self, connection, encoding):
         if "mysql" in connection and "charset=" not in connection:
             if "?" in connection:
