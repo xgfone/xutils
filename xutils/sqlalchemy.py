@@ -12,8 +12,12 @@ class DB(object):
 
     def __init__(self, write_connection, read_connection=None, autocommit=True,
                  expire_on_commit=False, echo=False, encoding=str("utf8"),
-                 poolclass=None, pool=None, min_pool_size=2, max_pool_size=5,
+                 poolclass=None, pool=None, min_pool_size=None, max_pool_size=5,
                  pool_timeout=30, idle_timeout=3600):
+        if min_pool_size is None:
+            min_pool_size = max_pool_size
+        if min_pool_size > max_pool_size:
+            raise ValueError("min_pool_size is greater than max_pool_size")
 
         write_connection = self._fix_charset(write_connection, encoding)
         if read_connection:
