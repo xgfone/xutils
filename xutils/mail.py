@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import time
 import os.path
 import smtplib
 import mimetypes
+import logging
 
+from threading import RLock
 from email.utils import formatdate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.audio import MIMEAudio
 from email.mime.image import MIMEImage
+
+LOG = logging.getLogger(__name__)
 
 _append_type_ext = {
     ".docx": "application/msword",
@@ -54,50 +59,82 @@ class EMail(object):
     }
 
     def __init__(self, username=None, password=None, _from=None, host=None,
-                 port=25, postfix=None, keepalived=False):
+                 port=25, postfix=None, keepalived=0):
         self.username = username
         self.password = password
         self.host = host
         self.port = port
         self.postfix = postfix
         self._from = _from
-        self._keepalived = keepalived
-        self._server = None
+        self._keepalived = int(keepalived)
+        self._server = (None, 0)
+        self._lock = RLock()
 
-    def get_connect(self, host, port, username, password, reset=False):
+    def check_server(self):
+        if self._keepalived > 0:
+            server, _time = self._server
+            if server and int(time.time()) - _time > self._keepalived:
+                self._set_server(server, close=True)
+                return False
+        return True
+
+    def _set_server(self, server, now=None, close=False, save=True):
+        if server and close:
+            try:
+                LOG.debug('close the mail connection')
+                server.close()
+            except Exception:
+                pass
+            server = None
+
+        if save and self._keepalived > 0:
+            with self._lock:
+                self._server = (server, now or int(time.time()))
+
+    def _get_server(self):
+        if self._keepalived < 1:
+            self.get_connect(self.host, self.port, self.username, self.password)
+
+        with self._lock:
+            server, _time = self._server
+            if server:
+                if int(time.time()) - _time < self._keepalived:
+                    return server
+                else:
+                    self._set_server(server, close=True, save=False)
+            return self.get_connect(self.host, self.port, self.username, self.password)
+
+    def get_connect(self, host, port, username, password):
         if not host or not port:
             raise ValueError("invalid arguments")
-
         server = smtplib.SMTP()
         server.connect(host, port)
         server.login(username, password)
-        if reset:
-            self._server = server
+        LOG.debug('Open the mail connection')
         return server
 
-    def send(self, tos, msg):
-        if self._server:
-            server = self._server
-        else:
-            server = self.get_connect(self.host, self.port, self.username,
-                                      self.password)
-
+    def _send(self, tos, msg):
+        server = self._get_server()
         try:
             server.sendmail(self._from, tos, msg.as_string())
         except Exception:
-            self._server = None
-            server.close()
+            self._set_server(server, close=True)
             raise
         else:
-            if self._keepalived:
-                self._server = server
-            else:
-                server.close()
+            self._set_server(server)
+
+    def send(self, tos, msg):
+        if self._keepalived < 1:
+            self._send(tos, msg)
+            return
+
+        with self._lock:
+            self._send(tos, msg)
 
     def _pad_header(self, msg, subject, tos):
         msg["Subject"] = subject
         msg["From"] = self._from
-        msg["To"] = ";".join(tos)
+        msg["To"] = ";".join(tos) if isinstance(tos, (list, tuple)) else tos
         msg["Date"] = formatdate()
         return msg
 
