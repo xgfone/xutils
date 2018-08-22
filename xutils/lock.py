@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Lock
-
+from xutils import PY3
 try:
     from queue import Queue
 except ImportError:
@@ -71,3 +71,31 @@ class _ResourceLock(object):
 
             if waiter.empty():
                 self._waiters.pop(id, None)
+
+
+class EmptyLock(object):
+    def __init__(self, lock=None):
+        self.__lock = lock
+
+    def acquire(self, blocking=True, timeout=-1):
+        """For Python 2.X, ignore the argument timeout."""
+
+        if self.__lock:
+            if PY3:
+                self.__lock._acquire(blocking=blocking, timeout=timeout)
+            else:
+                self.__lock._acquire(blocking=blocking)
+
+    def release(self):
+        if self.__lock:
+            self.__lock.release()
+
+    def __repr__(self):
+        if self.__lock:
+            return str(self.__lock)
+        return 'Lock(None)'
+
+    def __exit__(self, t, v, tb):
+        self.release()
+
+    __enter__ = acquire
