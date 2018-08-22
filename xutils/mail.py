@@ -60,6 +60,8 @@ class EMail(object):
 
     def __init__(self, username=None, password=None, _from=None, host=None,
                  port=25, postfix=None, keepalived=0):
+        """postfix is deprecated."""
+
         self.username = username
         self.password = password
         self.host = host
