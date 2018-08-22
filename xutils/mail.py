@@ -6,7 +6,7 @@ import smtplib
 import mimetypes
 import logging
 
-from threading import RLock
+from threading import Lock, RLock
 from email.utils import formatdate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -64,7 +64,6 @@ class EMail(object):
         self.password = password
         self.host = host
         self.port = port
-        self.postfix = postfix
         self._from = _from
         self._keepalived = int(keepalived)
         self._server = (None, 0)
@@ -179,3 +178,41 @@ class EMail(object):
                                charset=charset, attachmets=attachmets,
                                content_type=content_type)
         self.send(to_list, msg)
+
+
+class EMailCache(object):
+    Mail = EMail
+
+    def __init__(self, get_key=None):
+        """Return a new EMailCache, which is the thread-safe.
+
+        @get_key(function): a function returned the key of the email object,
+                            which receives three arguments,
+                            (mail_server_host, mail_server_port, mail_from).
+        """
+
+        self._caches = {}
+        self._lock = Lock()
+        self._get_key = get_key if get_key else self.__get_key
+
+    def __get_key(self, host, port, _from):
+        return "{0}_{1}_{2}".format(host, port, _from)
+
+    def add_email(self, username=None, password=None, _from=None, host=None,
+                  port=25, keepalived=0):
+        key = self._get_key(host, port, _from)
+        email = self.Mail(username=username, password=password, _from=_from,
+                          host=host, port=port, keepalived=keepalived)
+        with self._lock:
+            self._caches[key] = email
+
+    def get_email(self, host, port, _from, default=None):
+        """Return the email object by host, port, from.
+
+        If there is not the cached email object, it returns the default,
+        not raises the exception.
+        """
+
+        key = self._get_key(host, port, _from)
+        with self._lock:
+            return self._caches.get(key, default)
