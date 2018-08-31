@@ -35,10 +35,11 @@ class WSGIServer(ThreadingMixIn, _WSGIServer, object):
     request_queue_size = 128    # The bocklog size of the listening socket
     allow_reuse_address = True  # Reuse the address listened to
 
-    def __init__(self, addr, application, RequestHandlerClass=WSGIRequestHandler,
+    def __init__(self, addr, application=None, RequestHandlerClass=WSGIRequestHandler,
                  bind_and_activate=True):
         super(WSGIServer, self).__init__(addr, RequestHandlerClass, bind_and_activate)
-        self.set_app(application)
+        if application:
+            self.set_app(application)
 
     # (xgfone) Support the with context manager for Python 2.7.
     def __enter__(self):
