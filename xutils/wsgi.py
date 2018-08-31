@@ -40,6 +40,13 @@ class WSGIServer(ThreadingMixIn, _WSGIServer, object):
         super(WSGIServer, self).__init__(addr, RequestHandlerClass, bind_and_activate)
         self.set_app(application)
 
+    # (xgfone) Support the with context manager for Python 2.7.
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.server_close()
+
 
 class Resource(object):
     def status(self, status):
