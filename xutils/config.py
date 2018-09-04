@@ -26,19 +26,19 @@ def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc"), ext=".conf",
     /etc/{name}.conf
     """
 
-    path = os.path.abspath(os.path.expanduser(dir if dir else "."))
     name, fext = os.path.splitext(name)
+    if env:
+        filename = os.environ.get(name.upper(), None)
+        if filename and os.path.exists(filename):
+            return filename
+
     filename = name + ext if not fext or fext == "." else name
+    path = os.path.abspath(os.path.expanduser(dir if dir else "."))
 
     dirs = list(extra_dirs) if extra_dirs else []
     if path not in dirs:
         dirs = [path] + dirs
     dirs = [os.path.join(d, name) for d in dirs] + dirs
-
-    if env:
-        tmp = os.environ.get(name.upper(), None)
-        if tmp:
-            dirs.insert(0, tmp)
 
     for d in dirs:
         filepath = os.path.join(d, filename)

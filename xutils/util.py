@@ -147,7 +147,7 @@ if major >= 3:
             code = _get_codeobj(fname)
         else:
             code = compile(open(fname, 'rb').read(), fname, 'exec')
-        return exec(code, *args)
+        return __builtins__['exec'](code, *args)
 else:
     def _exec(_code_, _globs_=None, _locs_=None):
         """Execute code in a namespace."""
