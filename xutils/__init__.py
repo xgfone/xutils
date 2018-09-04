@@ -91,3 +91,8 @@ class AttributeProxy(Object):
         if self._is_dict:
             return self._obj.items()
         return vars(self._obj).items()
+
+    def get(self, name, default=None):
+        if self._is_dict:
+            return self._obj.get(name, default)
+        return getattr(self._obj, name, default)
