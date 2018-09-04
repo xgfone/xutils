@@ -4,7 +4,7 @@ import sys
 import os.path
 
 from argparse import ArgumentParser
-from xutils import is_string
+from xutils import PY3, is_string
 
 
 def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc")):
@@ -52,13 +52,6 @@ class Option(object):
 
 
 class String(Option):
-    try:
-        "".decode()
-    except AttributeError:
-        _py2 = False
-    else:
-        _py2 = True
-
     def __init__(self, name, short=None, default=None, help=None, cli=True,
                  encoding='utf-8'):
         super(String, self).__init__(name, short=short, default=default,
@@ -66,11 +59,11 @@ class String(Option):
         self._encoding = encoding
 
     def parse(self, value):
-        if self._py2:
-            if isinstance(value, str):
+        if PY3:
+            if not isinstance(value, str):
                 return value.decode(self._encoding)
         else:
-            if not isinstance(value, str):
+            if isinstance(value, str):
                 return value.decode(self._encoding)
         return value
 
