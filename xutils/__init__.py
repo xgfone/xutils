@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import logging
 
 major, minor, micro = sys.version_info[:3]
 if major < 3:
@@ -29,6 +30,7 @@ to_str = to_unicode if PY3 else to_bytes
 is_bytes = lambda s: isinstance(s, Bytes)
 is_unicode = lambda s: isinstance(s, Unicode)
 is_string = lambda s: isinstance(s, (Bytes, Unicode))
+LOG = logging.getLogger("gunicorn.error" if "gunicorn" in sys.modules else None)
 
 
 class Object(object):
