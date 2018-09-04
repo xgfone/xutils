@@ -18,6 +18,7 @@ A fragmentary Python library, no any third-part dependencies but ``sqlalchemy`` 
 * sending email
 * sqlalchemy
 * util
+* version
 * wsgi
 * xml2json
 
