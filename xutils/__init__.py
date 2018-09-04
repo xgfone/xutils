@@ -41,6 +41,7 @@ class Object(object):
 
 class AttributeProxy(Object):
     def __init__(self, obj):
+        '''The argument may be a dict or object.'''
         self._is_dict = isinstance(obj, dict)
         self._obj = obj
 
@@ -87,4 +88,6 @@ class AttributeProxy(Object):
             raise KeyError(name)
 
     def items(self):
-        return vars(self).items()
+        if self._is_dict:
+            return self._obj.items()
+        return vars(self._obj).items()
