@@ -56,6 +56,9 @@ class Option(object):
         self.help = help
         self.cli = cli
 
+    def __call__(self, value):
+        return self.parse(value)
+
     def parse(self, value):
         return value
 
@@ -64,7 +67,7 @@ class String(Option):
     def __init__(self, name, short=None, default=None, help=None, cli=True,
                  encoding='utf-8'):
         super(String, self).__init__(name, short=short, default=default,
-                                     help=help, cli=cli, encoding=encoding)
+                                     help=help, cli=cli)
         self._encoding = encoding
 
     def parse(self, value):
@@ -182,7 +185,8 @@ class Group(object):
 
 class Configuration(object):
     __slots__ = ["_default_group_name", "_default_group", "_allow_empty",
-                 "_parsed", "_caches", "_opts", "_description", "_version"]
+                 "_parsed", "_caches", "_opts", "_description", "_version",
+                 "_encoding", "_parse_string"]
 
     def __init__(self, description=None, allow_empty=False, encoding="utf-8",
                  default_group="DEFAULT", version=None):
@@ -199,6 +203,8 @@ class Configuration(object):
         self._default_group = Group(self._default_group_name)
         self._allow_empty = allow_empty
         self._version = version if version else "Unknown"
+        self._encoding = encoding
+        self._parse_string = String("", encoding=encoding).parse
 
         self._caches = {self._default_group_name: self._default_group}
         self._opts = {}
@@ -275,7 +281,7 @@ class Configuration(object):
             for name, opt in opts.items():
                 if name in group:
                     continue
-                elif opt.default is not None or issubclass(opt, Bool):
+                elif opt.default is not None or isinstance(opt, Bool):
                     self._set_group_opt(gname, name, opt.default)
                     continue
 
@@ -340,7 +346,7 @@ class Configuration(object):
 
             opt = self._opts[gname].get(name, None)
             if opt:
-                self._set_group_opt(gname, name, opt[0](value))
+                self._set_group_opt(gname, name, opt(value))
 
     def register_opt(self, opt, group=None):
         if not isinstance(opt, Option):
@@ -465,7 +471,7 @@ class Configuration(object):
             value = getattr(args, cli_opt, None)
             if value is not None:
                 value = opt.parse(value)
-                if issubclass(opt, Bool):
+                if isinstance(opt, Bool):
                     if opt.default is None:
                         if value:
                             self._set_group_opt(gname, name, value, force=True)
@@ -497,9 +503,10 @@ class Configuration(object):
                     continue
 
                 action = None
-                if issubclass(opt, Bool):
-                    action = "store_false" if opt.default else "store_true"
-                    default = False if opt.default is None else opt.default
+                default = opt.default
+                if isinstance(opt, Bool):
+                    action = "store_false" if default else "store_true"
+                    default = False if default is None else default
 
                 if gname == self._default_group_name:
                     opt_name = self._unniformize(name)
