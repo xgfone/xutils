@@ -35,7 +35,8 @@ LOG = logging.getLogger("gunicorn.error" if "gunicorn" in sys.modules else None)
 
 class Object(object):
     def __repr__(self):
-        ss = ("%s=%s" % (k, v) for k, v in vars(self).items() if not k.startswith("_"))
+        attrs = self.items() if hasattr(self, 'items') else vars(self).items()
+        ss = ("%s=%s" % (k, v) for k, v in attrs if not k.startswith("_"))
         return "%s(%s)" % (self.__class__.__name__, ", ".join(ss))
 
 
