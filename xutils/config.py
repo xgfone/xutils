@@ -6,6 +6,16 @@ import os.path
 
 from argparse import ArgumentParser
 from xutils import PY3, is_string
+from xutils.util import execpyfile
+
+
+def load_py_file(filename):
+    if not os.path.exists(filename):
+        raise RuntimeError("'%r' doest't exist" % filename)
+
+    cfg = {'__builtins__': __builtins__, '__file__': filename}
+    execpyfile(filename, cfg, cfg)
+    return cfg
 
 
 def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc"), ext=".conf",
