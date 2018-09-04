@@ -37,3 +37,54 @@ class Object(object):
     def __repr__(self):
         ss = ("%s=%s" % (k, v) for k, v in vars(self).items() if not k.startswith("_"))
         return "%s(%s)" % (self.__class__.__name__, ", ".join(ss))
+
+
+class AttributeProxy(Object):
+    def __init__(self, obj):
+        self._is_dict = isinstance(obj, dict)
+        self._obj = obj
+
+    def __contains__(self, name):
+        return name in self._obj if self._is_dict else hasattr(self._obj, name)
+
+    def __getattr__(self, name):
+        if self._is_dict:
+            try:
+                return self._obj[name]
+            except KeyError:
+                raise AttributeError("'%s' object has no attribute '%s'" %
+                                     (self._obj.__class__.__name__, name))
+        else:
+            try:
+                return getattr(self._obj, name)
+            except AttributeError:
+                raise AttributeError("'%s' object has no attribute '%s'" %
+                                     (self._obj.__class__.__name__, name))
+
+    def __setattr__(self, name, value):
+        if name == '_is_dict' or name == '_obj':
+            object.__setattr__(self, name, value)
+            return
+
+        if self._is_dict:
+            self._obj[name] = value
+        else:
+            setattr(self._obj, name, value)
+
+    def __setitem__(self, name, value):
+        if self._is_dict:
+            self._obj[name] = value
+        else:
+            setattr(self._obj, name, value)
+
+    def __getitem__(self, name):
+        if self._is_dict:
+            return self._obj[name]
+
+        try:
+            return getattr(self._obj, name)
+        except AttributeError:
+            raise KeyError(name)
+
+    def items(self):
+        return vars(self).items()
