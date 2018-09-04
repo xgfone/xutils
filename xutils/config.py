@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import os.path
 
@@ -7,11 +8,14 @@ from argparse import ArgumentParser
 from xutils import PY3, is_string
 
 
-def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc")):
+def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc"), ext=".conf",
+                     env=False):
     """Find the config file path.
 
-    If name has no ext, it will be appended with .conf.
+    If name has no ext, it will be appended with the argument ext.
     If dir is empty, it will be the current directory by default.
+    If env is True, it will find the configuration file firstly
+    from the environ variable, name, which will be converted to the upper.
 
     The lookup order is as follow,
     /{dir}/{name}/{name}.conf
@@ -23,20 +27,25 @@ def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc")):
     """
 
     path = os.path.abspath(os.path.expanduser(dir if dir else "."))
-    name, ext = os.path.splitext(name)
-    filename = name + ".conf" if not ext or ext == "." else name
+    name, fext = os.path.splitext(name)
+    filename = name + ext if not fext or fext == "." else name
 
     dirs = list(extra_dirs) if extra_dirs else []
     if path not in dirs:
         dirs = [path] + dirs
-
     dirs = [os.path.join(d, name) for d in dirs] + dirs
+
+    if env:
+        tmp = os.environ.get(name.upper(), None)
+        if tmp:
+            dirs.insert(0, tmp)
+
     for d in dirs:
         filepath = os.path.join(d, filename)
         if os.path.exists(filepath):
             return filepath
 
-    raise RuntimeError("Not found %s" % filename)
+    raise RuntimeError("Not found '%s'" % filename)
 
 
 class Option(object):
