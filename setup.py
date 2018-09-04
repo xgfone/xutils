@@ -13,7 +13,7 @@ with open(README_FILE) as f:
 
 setup(
     name="xutils",
-    version="2.0.4",
+    version="2.1.0",
     description="A Fragmentary Python Library, no any third-part dependencies.",
     long_description=long_description,
     author="xgfone",
@@ -33,5 +33,6 @@ setup(
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
 )
