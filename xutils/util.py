@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import json
+import os.path
 
 from subprocess import STDOUT, CalledProcessError, check_output as _check_output
 from xutils import major, minor, to_unicode, is_string
@@ -67,6 +68,15 @@ def which(command, reraise=False, encoding="utf-8", which="/usr/bin/which"):
         if reraise:
             raise RuntimeError(err.output or str(err))
         return []
+
+
+def load_py_file(filename):
+    if not os.path.exists(filename):
+        raise RuntimeError("'%r' doest't exist" % filename)
+
+    cfg = {'__builtins__': __builtins__, '__file__': filename}
+    execpyfile(filename, cfg, cfg)
+    return cfg
 
 
 ###############################################################################
