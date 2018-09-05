@@ -49,7 +49,7 @@ def find_config_file(name, dir=None, extra_dirs=("/opt", "/etc"), ext=".conf",
 
 
 class Option(object):
-    def __init__(self, name, short=None, default=None, help=None, cli=True):
+    def __init__(self, name, short=None, default=None, help=None, cli=None):
         self.name = name
         self.short = short
         self.default = default
@@ -64,7 +64,7 @@ class Option(object):
 
 
 class String(Option):
-    def __init__(self, name, short=None, default=None, help=None, cli=True,
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
                  encoding='utf-8'):
         super(String, self).__init__(name, short=short, default=default,
                                      help=help, cli=cli)
@@ -99,7 +99,7 @@ class Bool(Option):
 
 
 class Int(Option):
-    def __init__(self, name, short=None, default=None, help=None, cli=True,
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
                  base=10):
         super(Int, self).__init__(name, short=short, default=default, help=help,
                                   cli=cli)
@@ -118,7 +118,7 @@ class Float(Option):
 
 class List(Option):
     def __init__(self, parser, name, short=None, default=None, help=None,
-                 cli=True):
+                 cli=None):
         super(List, self).__init__(name, short=short, default=default,
                                    help=help, cli=cli)
         self._parser = parser
@@ -132,7 +132,7 @@ class List(Option):
 
 
 class IntList(List):
-    def __init__(self, name, short=None, default=None, help=None, cli=True,
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
                  base=10):
         super(IntList, self).__init__(Int("", base=base).parse, name,
                                       short=short, default=default, help=help,
@@ -140,14 +140,14 @@ class IntList(List):
 
 
 class FloatList(List):
-    def __init__(self, name, short=None, default=None, help=None, cli=True):
+    def __init__(self, name, short=None, default=None, help=None, cli=None):
         super(FloatList, self).__init__(Float("", cli=cli).parse, name,
                                         short=short, default=default,
                                         help=help, cli=cli)
 
 
 class StringList(List):
-    def __init__(self, name, short=None, default=None, help=None, cli=True,
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
                  encoding='utf-8'):
         super(StringList, self).__init__(String("", encoding=encoding).parse,
                                          name, short=short, default=default,
