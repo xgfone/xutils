@@ -348,7 +348,7 @@ class Configuration(object):
             if opt:
                 self._set_group_opt(gname, name, opt(value))
 
-    def register_opt(self, opt, group=None):
+    def register_opt(self, opt, group=None, cli=None):
         if not isinstance(opt, Option):
             raise ValueError("the option must be the subclass of Option")
 
@@ -362,12 +362,14 @@ class Configuration(object):
         if name in self._opts[group]:
             raise KeyError("The option {0} has been regisetered".format(name))
 
+        if isinstance(cli, bool):
+            opt.cli = cli
         self._opts[group][name] = opt
         self._caches[group] = Group(group)
 
-    def register_opts(self, opts, group=None):
+    def register_opts(self, opts, group=None, cli=None):
         for opt in opts:
-            self.register_opt(opt, group=group)
+            self.register_opt(opt, group=group, cli=cli)
 
     def register_bool(self, name, short=None, default=None, group=None,
                       help=None, cli=True):
