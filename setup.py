@@ -21,7 +21,7 @@ setup(
     maintainer="xgfone",
     maintainer_email="xgfone@126.com",
     url="https://github.com/xgfone/xutils",
-    packages=["xutils"],
+    packages=["xutils", "xutils.gunicorn_workers"],
 
     classifiers=[
         "License :: OSI Approved :: MIT License",
