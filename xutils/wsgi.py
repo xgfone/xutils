@@ -3,6 +3,7 @@
 
 import sys
 import json
+import time
 import logging
 import traceback
 
@@ -88,6 +89,22 @@ class Resource(object):
     def load_json(self, req, data=None):
         data = data or req.bounded_stream.read()
         return json_loads(data) if data else None
+
+
+class LogMiddleware(object):
+    def __init__(self, logger=None, level="info"):
+        if not logger:
+            logger = logging.getLogger()
+        self._output = getattr(logger, level.lower())
+
+    def process_request(self, req, resp):
+        req._starttime = time.time()
+
+    def process_response(self, req, resp, resource, req_succeeded):
+        req._endtime = time.time()
+        self._output("Request: method=%s, url=%s, start=%s, end=%s, cost=%s",
+                     req.method, req.url, req._starttime, req._endtime,
+                     req._endtime - req._starttime)
 
 
 class Router(falcon.routing.DefaultRouter):
