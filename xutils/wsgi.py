@@ -49,6 +49,25 @@ class WSGIServer(ThreadingMixIn, _WSGIServer, object):
         self.server_close()
 
 
+def SimpleWSGIServer(app, host=None, port=None, log=None, **kwargs):
+    with WSGIServer((host, port), app) as httpd:
+        msg = "WSGI is listening on %s:%d" % (host, port)
+        if log:
+            log.info(msg)
+        else:
+            print(msg)
+        httpd.serve_forever()
+
+
+def EventletWSGIServer(app, sock=None, host=None, port=None, max_size=None, **kwargs):
+    """A wrapper of eventlet.wsgi.server()."""
+    from eventlet import listen, wsgi
+
+    if not sock:
+        sock = listen((host, port))
+    wsgi.server(sock, app, max_size=max_size, **kwargs)
+
+
 class Resource(object):
     def status(self, status):
         if isinstance(status, int):
