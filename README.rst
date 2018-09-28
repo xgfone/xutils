@@ -3,6 +3,7 @@ xutils
 
 A fragmentary Python library, no any third-part dependencies but ``gunicorn_workers``, ``sqlalchemy`` and ``wsgi``. If you does't use them, it's no need to install them.
 
+* atexit
 * a simple argument parser based on CLI and file.
 * a simple logging configuration
 * circuit breaker
