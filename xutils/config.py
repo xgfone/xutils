@@ -55,6 +55,7 @@ class Option(object):
         self.default = default
         self.help = help
         self.cli = cli
+        self._group = None
 
     def __call__(self, value):
         return self.parse(value)
@@ -62,21 +63,42 @@ class Option(object):
     def parse(self, value):
         return value
 
+    def validate(self, value):
+        return value
+
 
 class String(Option):
     def __init__(self, name, short=None, default=None, help=None, cli=None,
-                 encoding='utf-8'):
+                 encoding='utf-8', empty=True, min_len=None, max_len=None):
         super(String, self).__init__(name, short=short, default=default,
                                      help=help, cli=cli)
         self._encoding = encoding
+        self._empty = empty
+        self._min_len = min_len
+        self._max_len = max_len
 
     def parse(self, value):
         if PY3:
             if not isinstance(value, str):
-                return value.decode(self._encoding)
+                value = value.decode(self._encoding)
         else:
             if isinstance(value, str):
-                return value.decode(self._encoding)
+                value = value.decode(self._encoding)
+
+        return self.validate(value)
+
+    def validate(self, value):
+        if self._empty is not None and not self._empty and not value:
+            raise ValueError("'%s' in group '%s' is empty" % (self.name, self._group))
+
+        if self._min_len is not None and len(value) < self._min_len:
+            raise ValueError("the length of '%s' in group '%s' is less than '%d'" %
+                             (self.name, self._group, self._min_len))
+
+        if self._max_len is not None and len(value) > self._max_len:
+            raise ValueError("the length of '%s' in group '%s' is greater than '%d'" %
+                             (self.name, self._group, self._max_len))
+
         return value
 
 
@@ -98,22 +120,45 @@ class Bool(Option):
         raise ValueError("invalid bool value '{0}'".format(value))
 
 
-class Int(Option):
+class Number(Option):
     def __init__(self, name, short=None, default=None, help=None, cli=None,
-                 base=10):
+                 min=None, max=None):
+        super(Number, self).__init__(name, short=short, default=default,
+                                     help=help, cli=cli)
+        self._min = min
+        self._max = max
+
+    def validate(self, value):
+        if self._min is not None and value < self._min:
+            raise ValueError("the length of '%s' in group '%s' is less than '%d'" %
+                             (self.name, self._group, self._min))
+
+        if self._max is not None and value > self._max:
+            raise ValueError("the length of '%s' in group '%s' is greater than '%d'" %
+                             (self.name, self._group, self._max))
+
+        return value
+
+
+class Int(Number):
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
+                 base=10, min=None, max=None):
         super(Int, self).__init__(name, short=short, default=default, help=help,
-                                  cli=cli)
+                                  cli=cli, min=min, max=max)
         self._base = base
 
     def parse(self, value):
-        if isinstance(value, int):
-            return value
-        return int(value, self._base)
+        return self.validate(value if isinstance(value, int) else int(value, self._base))
 
 
-class Float(Option):
+class Float(Number):
+    def __init__(self, name, short=None, default=None, help=None, cli=None,
+                 min=None, max=None):
+        super(Float, self).__init__(name, short=short, default=default,
+                                    help=help, cli=cli, min=min, max=max)
+
     def parse(self, value):
-        return float(value)
+        return self.validate(float(value))
 
 
 class List(Option):
@@ -239,6 +284,7 @@ class Configuration(object):
         return "{0}({1})".format(self.__class__.__name__, ", ".join(attrs))
 
     def _set_group_opt(self, group_name, opt_name, opt_value, force=False):
+        opt_value = self._opts[group_name][opt_name].validate(opt_value)
         gname = group_name if group_name else self._default_group_name
         group = self._caches[gname]
         if hasattr(group, opt_name) and not force:
@@ -362,6 +408,7 @@ class Configuration(object):
         if name in self._opts[group]:
             raise KeyError("The option {0} has been regisetered".format(name))
 
+        opt._group = group
         if isinstance(cli, bool):
             opt.cli = cli
         self._opts[group][name] = opt
