@@ -518,7 +518,7 @@ class Configuration(object):
         for cli_opt, (gname, name) in gopts.items():
             opt = self._opts[gname][name]
             value = getattr(args, cli_opt, None)
-            if value is not None:
+            if value:
                 value = opt.parse(value)
                 if isinstance(opt, Bool):
                     if opt.default is None:
