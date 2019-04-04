@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+from __future__ import absolute_import
+
 import time
 import atexit
 import logging
@@ -60,4 +62,4 @@ class LifeManager(object):
 
 
 manager = LifeManager()
-atexit.register(manager.stop())
+atexit.register(manager.stop)

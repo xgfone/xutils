@@ -4,6 +4,8 @@ and the new atexit for python 3.x
 Notice: this module is copied from kazoo/python2atexit.py
 """
 
+from __future__ import absolute_import
+
 import sys
 import atexit
 
